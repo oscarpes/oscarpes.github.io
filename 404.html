@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" translate="no" class="notranslate">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Oscarpes</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  <link rel="icon" href="/favicon.ico" /><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Oscarpes"><meta name="google" content="notranslate" /><script>
+(function(){
+  if (typeof Node === 'function' && Node.prototype) {
+    var rc = Node.prototype.removeChild;
+    Node.prototype.removeChild = function(filho){
+      if (filho && filho.parentNode !== this) { console.error('[anti-tradutor] removeChild de outro pai ignorado'); return filho; }
+      return rc.apply(this, arguments);
+    };
+    var ib = Node.prototype.insertBefore;
+    Node.prototype.insertBefore = function(novo, ref){
+      if (ref && ref.parentNode !== this) { console.error('[anti-tradutor] insertBefore com ref de outro pai ignorado'); return ib.call(this, novo, null); }
+      return ib.apply(this, arguments);
+    };
+  }
+  var erros = [];
+  function mostrar(msg){
+    erros.push(msg);
+    var raiz = document.getElementById('root');
+    if (raiz && raiz.children.length > 0) return;  // app renderizou: não intromete
+    var caixa = document.getElementById('socorro-oscarpes');
+    if (!caixa) {
+      caixa = document.createElement('div');
+      caixa.id = 'socorro-oscarpes';
+      caixa.className = 'notranslate';
+      caixa.setAttribute('translate', 'no');
+      caixa.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#7a1010;color:#fff;font:12px monospace;padding:10px;border-radius:8px;white-space:pre-wrap;max-height:45vh;overflow:auto';
+      document.body.appendChild(caixa);
+    }
+    var marcaTradutor = /translated/.test(document.documentElement.className) ? ' [TRADUTOR ATIVO]' : '';
+    caixa.textContent = '\u26a0\ufe0f O app n\u00e3o abriu. Mande um print desta caixa:' + marcaTradutor + '\n' + erros.join('\n');
+  }
+  window.addEventListener('error', function(e){
+    var pilha = (e.error && e.error.stack ? '\n   ' + String(e.error.stack).split('\n').slice(0,2).join(' | ').slice(0,200) : '');
+    mostrar((e.message||'erro') + ' @ ' + String(e.filename||'').split('/').pop() + ':' + e.lineno + pilha);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    mostrar('promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+  });
+  setTimeout(function(){
+    var raiz = document.getElementById('root');
+    if (!raiz || raiz.children.length === 0)
+      mostrar('20s e nada renderizou' + (erros.length ? '' : ' (nenhum erro de JS \u2014 pode ser rede/bundle bloqueado)'));
+  }, 20000);
+})();
+</script></head>
+
+  <body>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  <script src="/_expo/static/js/web/entry-8ef80d89e87ec76df54784389ee3f776.js" defer></script>
+</body>
+</html>
