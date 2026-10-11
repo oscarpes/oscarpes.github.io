@@ -1,0 +1,23 @@
+{
+  "_leia": "Tema de APRESENTAÇÃO da Brevant (motor em supabase/functions/_compartilhado/apresentacao, 05/out/2026). Só dado: cores, fontes, logos oficiais (tiradas do vetor da placa por scripts/brevant/logo-oficial.py — abertura = bloco empilhado branco, símbolo = ponto laranja + barras, selo = logo-branco) e a frase. Mudou? rode scripts/apresentacao/embutir.ts. NUNCA a Amboy (licença não conferida) nem a Corteva.",
+  "id": "brevant",
+  "nome": "Brevant Sementes",
+  "marca": "brevant",
+  "fundo": "angular",
+  "cores": {
+    "fundo": "#22030c", "fundoA": "#690c27", "fundoB": "#3c0616", "painel": "#3c0616", "destaque": "#810d2f",
+    "acento": "#f47c06", "acento2": "#f58807", "alt": "#c43c5a",
+    "texto": "#fbfbfc", "mudo": "#d9c5cb", "cinza": "#e6e8ea", "creme": "#fff1e2", "sobreAcento": "#3c0616"
+  },
+  "fontes": { "titulo": "Anton", "pesoTitulo": 400, "caixaAltaTitulo": true, "espacoTitulo": ".01em", "numero": "Anton", "pesoNumero": 400, "corpo": "Inter" },
+  "frase": "Se o assunto é semente, vem com a gente!",
+  "marcaTexto": null,
+  "seloTexto": null,
+  "rodapeDono": null,
+  "particulas": ["#ffffff", "#e6e8ea", "#fff1e2", "#e6e8ea", "#f47c06", "#f58807", "#ffffff"],
+  "ativos": {
+    "abertura": { "arquivo": "abertura.png", "largura": 490 },
+    "selo": { "arquivo": "selo.png" },
+    "simbolo": { "arquivo": "simbolo.png", "largura": 460 }
+  }
+}

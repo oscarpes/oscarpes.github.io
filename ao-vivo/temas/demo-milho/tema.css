@@ -1,0 +1,9 @@
+/* Tema demo-milho (06/out/2026): a página é a da Oscarpes; aqui só a etiqueta dos híbridos fictícios nas janelas. */
+.etiqueta-tema{display:inline-block;background:#c4ca3c;color:#0b1102;font-weight:700;padding:.05em .45em;border-radius:999px;white-space:nowrap}
+/* a folha (a mesma da Oscarpes) no tamanho do padrão: no topo e na abertura */
+.topo .marca .logo-tema{width:20px;height:25px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(162,167,42,.6))}
+#abertura .caixa>img.logo-tema{width:62px;height:76px;object-fit:contain;margin-bottom:14px;filter:drop-shadow(0 0 22px rgba(162,167,42,.7))}
+/* com o mapa ou a carteira abertos, a folha (as bolinhas) encolhe no alto, como no Jarvis das empresas */
+html.tema-demo-milho body.pb-aberto #esfera{width:64px;height:64px;top:calc(14px + env(safe-area-inset-top) + 30px)}
+html.tema-demo-milho body.pb-aberto #estado{top:calc(14px + env(safe-area-inset-top) + 64px);font-size:10px;opacity:.75}
+@media (max-width:759px){html.tema-demo-milho body.pb-aberto #esfera{width:52px;height:52px;top:calc(14px + env(safe-area-inset-top) + 40px)}html.tema-demo-milho body.pb-aberto #estado{top:calc(14px + env(safe-area-inset-top) + 66px)}}

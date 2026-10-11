@@ -1,0 +1,480 @@
+/* OSCARPES AO VIVO — o estilo da página (era o <style> do index.html até 03/out/2026).
+   Com ?tema= o carregador do index.html lê este arquivo como texto, troca as cores da marca e
+   põe no mesmo lugar como <style> (docs/ao-vivo/TEMAS.md). */
+:root{
+  /* Paleta da Oscarpes (PLANO.md seção 6) — João, 02/out: "use as cores da oscarpes, mas mantenha a modernidade".
+     --ciano/--ciano2 ficaram com o nome antigo, mas agora são o VERDE-CLARO da marca e o verde escuro. */
+  --bg:#0b1102; --bg2:#141d05; --ciano:#c4ca3c; --ciano2:#7d8420; --txt:#f1e9c4; --mudo:#b3a97a;
+  --ouro:#f9a322; --folha:#a2a72a; --vidro:rgba(27,39,4,.62); --borda:rgba(162,167,42,.38); --perigo:#ff6b6b;
+  /* VIDRO (02/out/2026) — João, na TV grande: "as páginas naquele estilo transparência, de uma forma bem
+     moderna" e "a imagem não era moderna igual na versão azul". É o vidro do protótipo azul
+     (~/VozJarvis/tela): fundo translúcido com desfoque, borda fina luminosa, brilho por dentro —
+     nas cores da marca (verde-claro, oliva e ouro), nunca azul. */
+  --vidro-a:rgba(196,202,60,.10); --vidro-b:rgba(24,34,6,.36); --vidro-c:rgba(11,17,2,.56);
+  --vidro-borda:rgba(214,220,110,.34); --vidro-brilho:rgba(241,233,196,.18);
+  /* com painéis a folha encolhe para o topo e a tela fica para as janelas */
+  --folha-h:clamp(58px,8.5vh,124px);
+  --topo-paineis:calc(14px + env(safe-area-inset-top) + var(--folha-h) + 30px);
+  --base-paineis:calc(184px + env(safe-area-inset-bottom));
+}
+/* letra que cresce com a tela: 1920 px (TV) → 18 px; 3840 → 24 px; celular fica em 14 px.
+   Dentro dos painéis os números crescem com a LARGURA DO PAINEL (cqi). */
+html{font-size:clamp(14px,.5vw + 8.4px,24px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Inter","Helvetica Neue",Arial,sans-serif;overflow:hidden}
+body{background:
+  radial-gradient(1200px 800px at 50% 38%,rgba(162,167,42,.14),transparent 65%),
+  radial-gradient(700px 500px at 85% 110%,rgba(249,163,34,.07),transparent 70%),
+  linear-gradient(rgba(162,167,42,.045) 1px,transparent 1px) 0 0/100% 46px,
+  linear-gradient(90deg,rgba(162,167,42,.035) 1px,transparent 1px) 0 0/46px 100%, var(--bg)}
+#fundo{position:fixed;inset:0;z-index:0}
+/* as bolinhas da folha voam por cima das janelas (e não atrás do vidro: assim o desfoque não
+   precisa ser refeito a cada quadro) — sem pegar clique */
+#particulas{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.topo{position:fixed;z-index:5;top:calc(14px + env(safe-area-inset-top));left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;
+  font:600 12px Menlo,ui-monospace,monospace;letter-spacing:.32em;color:var(--ciano)}
+.marca{display:flex;align-items:center;gap:10px}
+.marca img{display:block}
+#hora{font-size:22px;letter-spacing:.06em;text-shadow:0 0 18px rgba(162,167,42,.55)}
+#limpar{display:none;background:rgba(20,29,5,.4);border:1px solid var(--vidro-borda);color:var(--mudo);border-radius:999px;font:600 10px Menlo,monospace;letter-spacing:.2em;padding:6px 12px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+body.com-paineis #limpar{display:inline-block}
+/* #esfera é só a CAIXA da folha (onde ela fica e onde se toca); quem desenha é o #particulas */
+#esfera{position:fixed;z-index:5;left:50%;top:42%;width:min(62vmin,520px);height:min(62vmin,520px);transform:translate(-50%,-50%);transition:all .9s cubic-bezier(.2,.8,.2,1);cursor:pointer;border-radius:50%}
+body.com-paineis #esfera{width:var(--folha-h);height:var(--folha-h);top:calc(14px + env(safe-area-inset-top) + var(--folha-h) / 2)}
+#estado.chama{color:var(--ouro);animation:pulsa 1.6s ease-in-out infinite}
+#estado{position:fixed;z-index:5;left:0;right:0;top:calc(42% + min(31vmin,260px) + 8px);text-align:center;font:600 11px Menlo,monospace;letter-spacing:.45em;color:var(--ciano2);transition:top .9s;pointer-events:none}
+body.com-paineis #estado{top:calc(14px + env(safe-area-inset-top) + var(--folha-h) + 4px);font-size:10px}
+
+/* LEGENDA (02/out/2026) — João: "estou numa tv bem grande e a legenda ocupou quase a tela toda".
+   Agora é uma faixa baixa e curta (no máximo 2 linhas, ~60 letras por linha), de vidro, que some
+   sozinha depois da fala: o que a voz diz é curto e o detalhe mora nos painéis. */
+#legenda{position:fixed;z-index:6;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  width:max-content;max-width:min(60ch,92vw);text-align:center;font-size:clamp(14px,.6vw + 8px,22px);line-height:1.4;color:var(--txt);
+  padding:.4em 1.1em;border-radius:14px;background:rgba(11,17,2,.55);border:1px solid rgba(196,202,60,.2);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.35);
+  opacity:0;transition:opacity .6s,transform .6s;pointer-events:none}
+#legenda.on{opacity:1;transform:translate(-50%,0)}
+#legenda:empty{display:none}
+/* as 2 linhas ficam no texto de dentro (com o respiro na caixa de fora a 3ª linha vazava pela borda) */
+#legenda .txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+#legenda .voce{color:var(--mudo);font-style:italic}
+#legenda small{font-size:.8em}
+
+/* ÁREA DOS PAINÉIS: tudo o que sobra entre a folha (topo) e a legenda (base) */
+#paineis{position:fixed;z-index:3;left:0;right:0;top:var(--topo-paineis);bottom:var(--base-paineis);padding:0 clamp(16px,2.2vw,56px);display:none;flex-direction:row;gap:clamp(12px,1.2vw,28px)}
+body.com-paineis #paineis{display:flex}
+.grade{flex:1 1 auto;min-height:0;display:grid;gap:clamp(12px,1.2vw,28px);margin:0 auto;width:100%;grid-template-rows:minmax(0,1fr)}
+.grade>.painel{min-height:0;max-height:100%}
+.grade.uma-linha>.painel:not([data-tipo=imagem]){align-self:center}
+.grade>.painel[data-tipo=numeros]:first-child{align-self:stretch}
+/* a faixa de números no alto (resposta repartida): baixa, para sobrar altura às listas */
+.grade.faixa>.painel:first-child .kpis{grid-template-columns:repeat(auto-fit,minmax(clamp(130px,14cqi,280px),1fr));margin:0}
+.grade.faixa>.painel:first-child .kpi b{font-size:clamp(1.4rem,3.4cqi,3.4rem)}
+.grade.faixa>.painel:first-child .cab{margin-bottom:.5em}
+#saindo{position:fixed;inset:0;z-index:3;pointer-events:none}
+#pontos{display:none}
+/* FOCO (02/out/2026, João: "quando eu clicar em alguma das telas, ela expandir para eu olhar o todo e
+   conseguir navegar nela"): a janela em foco ocupa a área inteira; as outras viram MINIATURAS na tira
+   ao lado (também quando há mais janelas do que cabem legíveis — nunca janela minúscula). */
+#miniaturas{display:none;flex:none;width:clamp(200px,15vw,300px);flex-direction:column;gap:10px;overflow-y:auto;padding:2px;scrollbar-width:thin}
+body.com-tira #miniaturas{display:flex}
+.painel:not(.focado):not(.miniatura){cursor:zoom-in}
+.painel.oculta{display:none}
+.painel.pronto{animation:none;opacity:1}
+.painel.pronto::before{animation:none;background-position:50% 0,-60% 0}
+.painel.pronto .moldura .quadro::after{display:none}
+.painel.miniatura{flex:none;cursor:pointer;opacity:.72;padding:10px 14px;transition:opacity .2s;max-height:none}
+.painel.miniatura:hover{opacity:1}
+.painel.miniatura .corpo,.painel.miniatura .explorar,.painel.miniatura .sub,.painel.miniatura .botoes{display:none !important}
+/* miniatura de mapa mostra o mapa pequeno (dá para reconhecer qual é) */
+.painel.miniatura[data-tipo=imagem] .corpo{display:block !important;height:clamp(70px,9vh,120px);margin-top:6px;pointer-events:none;overflow:hidden}
+.painel.miniatura[data-tipo=imagem] .moldura{height:100%;padding:4px}
+.painel.miniatura[data-tipo=imagem] figcaption,.painel.miniatura .zoom-ctl{display:none !important}
+.painel.miniatura .cab{margin:0}
+.painel.miniatura .titulo{font-size:.95rem}
+.painel.focado{box-shadow:inset 0 1px 0 var(--vidro-brilho),inset 0 0 90px rgba(162,167,42,.09),0 0 60px rgba(196,202,60,.22),0 30px 90px rgba(0,0,0,.6);border-color:rgba(214,220,110,.5)}
+.painel.focado svg.graf{max-height:62vh}
+.botoes{display:flex;gap:8px;flex:none}
+.expandir{flex:none;background:rgba(11,17,2,.3);border:1px solid var(--vidro-borda);color:var(--ciano);border-radius:999px;font:600 14px Menlo,monospace;min-width:2.2em;height:2.2em;padding:0 .6em;cursor:pointer}
+.expandir .volta{display:none;font-size:10px;letter-spacing:.2em}
+.painel.focado .expandir .abre{display:none}
+.painel.focado .expandir .volta{display:inline}
+/* explorar o assunto (só no foco) */
+.explorar{display:none;flex:none;flex-wrap:wrap;gap:8px;align-items:center;margin-top:.7em;padding-top:.8em;border-top:1px solid rgba(196,202,60,.15)}
+.painel.focado .explorar{display:flex}
+.explorar button{background:rgba(196,202,60,.07);border:1px solid rgba(196,202,60,.3);color:var(--txt);border-radius:999px;padding:.5em 1em;font-size:.85rem;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.explorar button:hover{background:rgba(196,202,60,.16)}
+.explorar .explorar-tudo{font:600 .72rem Menlo,monospace;letter-spacing:.2em;color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border:0;box-shadow:0 0 22px rgba(162,167,42,.35)}
+/* mapa navegável no foco: palco que recebe o zoom/arrasto e os botões + − ⟲ */
+.palco{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
+.zoom-ctl{display:none;position:absolute;right:10px;bottom:10px;z-index:2;gap:6px;align-items:center;padding:5px;border-radius:999px;background:rgba(11,17,2,.6);border:1px solid var(--vidro-borda);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.zoom-ctl button{width:2.1em;height:2.1em;border-radius:50%;border:1px solid rgba(196,202,60,.35);background:rgba(196,202,60,.08);color:var(--txt);font-size:1rem;cursor:pointer}
+.zoom-valor{font:600 .66rem Menlo,monospace;color:var(--mudo);min-width:3.6em;text-align:center}
+.painel.focado .zoom-ctl{display:flex}
+.painel.focado .quadro{cursor:grab;touch-action:none}
+.painel.focado .moldura .quadro::after{display:none}
+
+/* O PAINEL DE VIDRO */
+.painel{position:relative;display:flex;flex-direction:column;min-width:0;container-type:inline-size;
+  background:linear-gradient(150deg,var(--vidro-a),var(--vidro-b) 38%,var(--vidro-c));
+  border:1px solid var(--vidro-borda);border-radius:clamp(14px,1.1vw,22px);
+  padding:clamp(14px,1.2vw,28px) clamp(16px,1.4vw,32px);
+  backdrop-filter:blur(18px) saturate(170%);-webkit-backdrop-filter:blur(18px) saturate(170%);
+  box-shadow:inset 0 1px 0 var(--vidro-brilho),inset 0 0 70px rgba(162,167,42,.07),0 0 36px rgba(162,167,42,.14),0 28px 70px rgba(0,0,0,.5);
+  animation:materializa .85s cubic-bezier(.16,.9,.2,1) var(--atraso,0ms) both}
+/* risco de luz no alto + o brilho que varre o vidro uma vez quando a janela nasce */
+.painel::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(241,233,196,.6),transparent) 50% 0/62% 1px no-repeat,
+             linear-gradient(115deg,transparent 40%,rgba(214,220,110,.16) 50%,transparent 60%) 120% 0/250% 100% no-repeat;
+  animation:varre 2.4s ease-out calc(var(--atraso,0ms) + .25s) both}
+/* cantoneiras de HUD (ouro) */
+.painel::after{content:"";position:absolute;inset:7px;border-radius:calc(clamp(14px,1.1vw,22px) - 5px);pointer-events:none;opacity:.6;
+  background:
+    linear-gradient(var(--ouro),var(--ouro)) 0 0/16px 1.5px no-repeat, linear-gradient(var(--ouro),var(--ouro)) 0 0/1.5px 16px no-repeat,
+    linear-gradient(var(--ouro),var(--ouro)) 100% 0/16px 1.5px no-repeat, linear-gradient(var(--ouro),var(--ouro)) 100% 0/1.5px 16px no-repeat,
+    linear-gradient(var(--ouro),var(--ouro)) 0 100%/16px 1.5px no-repeat, linear-gradient(var(--ouro),var(--ouro)) 0 100%/1.5px 16px no-repeat,
+    linear-gradient(var(--ouro),var(--ouro)) 100% 100%/16px 1.5px no-repeat, linear-gradient(var(--ouro),var(--ouro)) 100% 100%/1.5px 16px no-repeat}
+@keyframes materializa{
+  0%{opacity:0;clip-path:inset(46% 46% round 22px);filter:blur(14px) brightness(1.9)}
+  40%{opacity:1}
+  100%{opacity:1;clip-path:inset(-90px -90px round 22px);filter:none}}
+@keyframes varre{from{background-position:50% 0,120% 0}to{background-position:50% 0,-60% 0}}
+.painel.saindo{position:fixed;margin:0;animation:dissolve .55s ease-in both}
+.painel.saindo::before{animation:none}
+@keyframes dissolve{0%{opacity:1}100%{opacity:0;filter:blur(16px) brightness(1.8);transform:scale(1.04)}}
+.cab{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:clamp(8px,.9vw,18px);flex:none}
+.rotulo{display:flex;align-items:center;gap:.7em;font:600 max(14px,.68rem) Menlo,ui-monospace,monospace;letter-spacing:.28em;color:var(--ciano);text-transform:uppercase}
+.rotulo::before{content:"";flex:none;width:.55em;height:.55em;background:var(--ouro);box-shadow:0 0 10px var(--ouro);border-radius:1px}
+.rotulo .indice{color:var(--mudo);letter-spacing:.18em;opacity:.85;font-size:max(14px,1em)}
+.titulo{font-size:1.35rem;font-size:clamp(1.1rem,3.6cqi,2rem);font-weight:700;line-height:1.15;margin-top:.3em;text-shadow:0 0 24px rgba(196,202,60,.18)}
+.sub{color:var(--mudo);font-size:.86rem;margin-top:.25em}
+.fechar{flex:none;background:rgba(11,17,2,.3);border:1px solid var(--vidro-borda);color:var(--mudo);border-radius:999px;font:600 14px Menlo,monospace;width:2.2em;height:2.2em;cursor:pointer;pointer-events:auto}
+.corpo{flex:1 1 auto;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(196,202,60,.3) transparent}
+.painel[data-tipo=numeros] .corpo{display:flex;flex-direction:column;justify-content:safe center}
+/* números grandes, legíveis do sofá */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(100px,19cqi,250px),1fr));gap:clamp(8px,1.6cqi,18px);margin:.2em 0 1em}
+.kpi{position:relative;padding:clamp(10px,2.2cqi,20px);border-radius:12px;background:linear-gradient(160deg,rgba(196,202,60,.11),rgba(196,202,60,.02));border:1px solid rgba(196,202,60,.2);box-shadow:inset 0 1px 0 rgba(241,233,196,.08)}
+.kpi b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.8rem;font-size:clamp(1.4rem,6cqi,4.2rem);color:var(--ouro);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(249,163,34,.35)}
+.kpi b small{font-size:.5em;font-weight:600;margin:0 .15em;opacity:.85}
+.kpi span{display:block;margin-top:.45em;font:600 max(14px,.64rem) Menlo,monospace;letter-spacing:.16em;color:var(--mudo);text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:1rem;font-size:clamp(.9rem,2.3cqi,1.15rem)}
+th{font:600 max(14px,.62rem) Menlo,monospace;letter-spacing:.16em;color:var(--mudo);text-transform:uppercase;text-align:left;padding:.5em .5em;border-bottom:1px solid rgba(196,202,60,.28);position:sticky;top:0;background:rgba(14,21,3,.85);backdrop-filter:blur(6px)}
+td{padding:.45em .5em;border-bottom:1px solid rgba(196,202,60,.09);vertical-align:top}
+th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{font-size:max(14px,.75em)}
+tr.alerta td{color:#ffc27a}
+.tag{display:inline-block;font:600 .6rem Menlo,monospace;letter-spacing:.12em;padding:2px 7px;border:1px solid rgba(196,202,60,.55);border-radius:999px;color:#d8dc6a;margin-left:6px;vertical-align:middle}
+.nota{color:var(--mudo);font-size:.82rem;margin-top:.8em}
+.texto-livre{white-space:pre-wrap;font-size:1rem;line-height:1.5}
+svg.graf{width:100%;height:auto;display:block;margin-top:4px;overflow:visible}
+/* gráfico encolhe para caber na janela (a TV não rola) */
+.painel[data-tipo=grafico] .corpo{display:flex;flex-direction:column}
+.painel[data-tipo=grafico] svg.graf{flex:1 1 auto;min-height:110px;max-height:46vh}
+.painel[data-tipo=grafico] .kpis{grid-template-columns:repeat(auto-fit,minmax(clamp(84px,15cqi,220px),1fr));margin-bottom:.6em}
+.painel[data-tipo=grafico] .kpi b{font-size:clamp(1.25rem,4.6cqi,3.2rem)}
+/* janela de gráfico LARGA (a vaga comprida na TV): números à esquerda, gráfico à direita */
+@container (min-width: 760px){
+  .painel[data-tipo=grafico] .corpo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-auto-rows:min-content;column-gap:1.6em;align-content:safe center}
+  .painel[data-tipo=grafico] .kpis{grid-column:1;grid-row:1 / span 2;margin:0;align-self:center;grid-template-columns:repeat(auto-fit,minmax(clamp(84px,11cqi,210px),1fr))}
+  .painel[data-tipo=grafico] .kpi{padding:clamp(8px,1.1cqi,16px)}
+  .painel[data-tipo=grafico] .kpi b{font-size:clamp(1.1rem,2.7cqi,2.6rem)}
+  .painel[data-tipo=grafico] svg.graf{grid-column:2;grid-row:1;max-height:40vh}
+  .painel[data-tipo=grafico] .nota{grid-column:2}
+}
+.barras-nut{display:grid;grid-template-columns:minmax(80px,auto) 1fr auto;gap:.55em .9em;align-items:center;font-size:1rem}
+.trilho{position:relative;height:.7em;border-radius:999px;background:rgba(196,202,60,.08);box-shadow:inset 0 0 0 1px rgba(196,202,60,.12)}
+.trilho i{position:absolute;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--ciano2),var(--ciano));opacity:.6;box-shadow:0 0 12px rgba(196,202,60,.35)}
+.trilho em{position:absolute;top:-.3em;width:3px;height:1.3em;border-radius:2px;background:var(--ouro);box-shadow:0 0 10px var(--ouro)}
+/* IMAGEM / MAPA numa moldura de vidro (nunca mais a imagem crua e chapada) */
+.painel[data-tipo=imagem] .corpo{display:flex;flex-direction:column}
+.moldura{position:relative;flex:1 1 auto;min-height:0;margin:0;display:flex;flex-direction:column;gap:.6em;padding:clamp(8px,1.4cqi,16px);border-radius:14px;
+  background:radial-gradient(120% 90% at 50% 40%,rgba(196,202,60,.10),rgba(11,17,2,.35));border:1px solid rgba(196,202,60,.26);box-shadow:inset 0 0 40px rgba(162,167,42,.12)}
+.moldura .quadro{position:relative;flex:1 1 auto;min-height:clamp(140px,22vh,260px);overflow:hidden;border-radius:10px}
+/* O MAPA INTEIRO, SEMPRE (02/out/2026, noite — João: "o mapa não abriu legal, mostrou só uma ponta do mapa").
+   A causa: a imagem ficava dentro de uma grade com linha "auto" (.quadro e .palco eram display:grid). A linha
+   crescia até a ALTURA NATURAL do PNG (1080 px) — o max-height:100% da imagem não tinha contra o que medir —
+   e o overflow:hidden do quadro cortava o resto: na janela pequena sobrava o canto de cima. Agora o palco e a
+   imagem são PRESOS ao quadro (absolute + inset:0) e a imagem é "contain": a fazenda inteira cabe em qualquer
+   tamanho de janela; o zoom e o arrasto começam do "caber na tela". */
+.moldura img{display:block;position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:8px;filter:drop-shadow(0 0 18px rgba(196,202,60,.22))}
+.moldura .quadro::after{content:"";position:absolute;left:0;right:0;height:22%;top:-25%;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(214,220,110,.16),transparent);animation:escaneia 2.8s ease-in-out calc(var(--atraso,0ms) + .5s) 1 both}
+@keyframes escaneia{from{top:-25%}to{top:105%}}
+.moldura figcaption{font:600 .64rem Menlo,monospace;letter-spacing:.18em;color:var(--mudo);text-transform:uppercase;text-align:center}
+.controles{position:fixed;z-index:7;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:12px;padding:0 16px}
+#mic{width:64px;height:64px;border-radius:50%;border:1px solid var(--ciano);background:radial-gradient(circle,rgba(162,167,42,.25),rgba(11,17,2,.92));
+  color:var(--ciano);cursor:pointer;display:grid;place-items:center;box-shadow:0 0 30px rgba(162,167,42,.25)}
+#mic.ativo{border-color:var(--ouro);color:var(--ouro);box-shadow:0 0 40px rgba(249,163,34,.35);animation:pulsa 1.8s ease-in-out infinite}
+@keyframes pulsa{50%{box-shadow:0 0 60px rgba(249,163,34,.55)}}
+#mic svg{width:28px;height:28px}
+#mic.chama{width:84px;height:84px;border-color:var(--ouro);color:var(--ouro);box-shadow:0 0 60px rgba(249,163,34,.6);animation:pulsa 1.2s ease-in-out infinite}
+#caixa{flex:0 1 420px;display:flex;background:rgba(20,29,5,.55);border:1px solid var(--borda);border-radius:999px;overflow:hidden;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#caixa input{flex:1;background:none;border:0;color:var(--txt);font-size:15px;padding:12px 16px;outline:none;min-width:0}
+#caixa button{background:none;border:0;border-left:1px solid var(--borda);color:var(--ciano);font:600 11px Menlo,monospace;letter-spacing:.2em;padding:0 16px;cursor:pointer}
+#abertura{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(27,39,4,.55),rgba(11,17,2,.95))}
+#abertura .caixa{text-align:center;max-width:520px;padding:24px}
+#abertura h1{font-weight:700;font-size:clamp(30px,6vw,46px);letter-spacing:.12em;margin:0 0 10px}
+#abertura p{color:var(--mudo);line-height:1.55;margin:0 0 22px}
+#comecar{font:600 13px Menlo,monospace;letter-spacing:.35em;color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border:0;padding:16px 28px;cursor:pointer;box-shadow:0 0 40px rgba(162,167,42,.45)}
+#aviso{position:fixed;z-index:21;left:50%;top:calc(60px + env(safe-area-inset-top));transform:translateX(-50%);max-width:92vw;background:rgba(40,10,10,.9);border:1px solid var(--perigo);color:#ffd6d6;padding:10px 14px;font-size:14px;display:none}
+#aviso a{color:#fff}
+/* CELULAR: uma janela por vez, de lado a lado (arrasta para o lado), com pontinhos embaixo */
+@media (max-width:759px){
+  :root{--folha-h:22vmin;--topo-paineis:calc(58px + env(safe-area-inset-top) + var(--folha-h) + 24px);--base-paineis:calc(152px + env(safe-area-inset-bottom))}
+  #esfera{top:36%} #estado{top:calc(36% + 31vmin + 6px)}
+  body.com-paineis #esfera{top:calc(58px + env(safe-area-inset-top) + var(--folha-h) / 2)}
+  body.com-paineis #estado{top:calc(58px + env(safe-area-inset-top) + var(--folha-h) + 4px)}
+  #paineis{padding:0;flex-direction:column;gap:0}
+  body.em-foco #paineis{top:calc(52px + env(safe-area-inset-top))}
+  /* no foco a janela sobe até o topo: a folha vai para o meio da barra de cima (pequena) */
+  body.em-foco #esfera{width:34px;height:34px;top:calc(30px + env(safe-area-inset-top))}
+  body.em-foco #estado{opacity:0}
+  body.em-foco .marca span{display:none}
+  body.em-foco .grade{overflow-x:hidden}
+  .explorar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .explorar button{flex:none}
+  .expandir .volta{font-size:9px}
+  .grade{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;gap:12px;padding:0 16px;scroll-padding:0 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .grade::-webkit-scrollbar{display:none}
+  .grade>.painel{flex:0 0 calc(100vw - 32px);scroll-snap-align:center;align-self:stretch !important}
+  .painel{backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%)}
+  #pontos{display:flex;justify-content:center;gap:7px;padding-top:9px;flex:none}
+  #pontos i{width:7px;height:7px;border-radius:50%;background:rgba(196,202,60,.25);transition:all .3s}
+  #pontos i.on{background:var(--ouro);box-shadow:0 0 8px var(--ouro);width:18px;border-radius:4px}
+  .moldura .quadro{min-height:42vh}
+  #hora{font-size:18px} .topo{letter-spacing:.2em}
+  #caixa{flex:1}
+  #legenda{bottom:calc(92px + env(safe-area-inset-bottom))}
+  body.com-paineis #hora{display:none}
+  #limpar{font-size:9px;letter-spacing:.12em;padding:5px 9px}
+}
+
+/* CAMADAS DO MAPA (02/out/2026, noite): os mapas da MESMA fazenda (P, K, pH, MO…) numa janela só, com abas */
+.camadas{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.5em;flex:none}
+.camadas button{background:rgba(196,202,60,.06);border:1px solid rgba(196,202,60,.28);color:var(--mudo);border-radius:999px;padding:.32em .9em;font:600 .7rem Menlo,monospace;letter-spacing:.12em;cursor:pointer}
+.camadas button.on{color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border-color:transparent;box-shadow:0 0 16px rgba(162,167,42,.35)}
+.chips-mapas{display:flex;flex-wrap:wrap;gap:4px 5px;align-items:center;flex:none;margin-bottom:4px}
+.chips-mapas.linha2{margin-bottom:8px}
+.chips-mapas .grupo-rot{font:600 .55rem Menlo,monospace;letter-spacing:.14em;color:var(--mudo);text-transform:uppercase;margin:0 2px 0 8px}
+.chips-mapas .grupo-rot:first-child{margin-left:0}
+.chips-mapas button{background:rgba(196,202,60,.05);border:1px solid rgba(196,202,60,.22);color:var(--mudo);border-radius:999px;padding:.2em .66em;font:600 .74rem Menlo,monospace;cursor:pointer}
+.chips-mapas button.carregado{color:var(--txt)}
+.chips-mapas button.on{color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border-color:transparent}
+.carregando-mapa{position:absolute;inset:8%;border-radius:12px;background:linear-gradient(110deg,rgba(196,202,60,.05) 30%,rgba(196,202,60,.18) 50%,rgba(196,202,60,.05) 70%);background-size:220% 100%;animation:brilhoMapa 1.2s linear infinite}
+.outra-prof .carregando-mapa{position:relative;inset:auto;width:100%;aspect-ratio:1}
+@keyframes brilhoMapa{from{background-position:120% 0}to{background-position:-120% 0}}
+.sem-camada{position:absolute;inset:0;display:grid;place-items:center;color:var(--mudo);font-size:.8rem;text-align:center;padding:1em}
+.outra-prof .sem-camada{position:relative;aspect-ratio:1}
+.mapa-e-camadas{flex:1 1 auto;min-height:0;display:flex;gap:10px}
+.mapa-e-camadas>.moldura{flex:1 1 auto;min-width:0}
+.outras-prof{flex:none;width:clamp(110px,24cqi,260px);display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.outra-prof,.ano-mapa{position:relative;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:12px;border:1px solid rgba(196,202,60,.28);background:rgba(11,17,2,.35);cursor:pointer;color:var(--mudo);font:600 .62rem Menlo,monospace;letter-spacing:.1em}
+.outra-prof:hover,.ano-mapa:hover{border-color:var(--ouro);color:var(--txt)}
+.outra-prof img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px}
+.mapas-anos{flex:1 1 auto;min-height:0;display:grid;gap:10px;grid-auto-rows:min-content}
+.ano-mapa{min-height:0;align-items:center}
+.ano-mapa img{flex:none;width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px}
+/* 05/out/2026: a galeria de fotos das visitas (consultas-fotos.ts) */
+.ano-mapa.foto img{aspect-ratio:4/3;object-fit:cover}
+.ano-mapa.foto span{display:block;width:100%;font:500 max(14px,.8rem) system-ui,sans-serif;letter-spacing:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.ano-mapa span{font-size:.9rem;color:var(--ouro);text-align:center}
+.painel.miniatura .outras-prof,.painel.miniatura .mapas-anos .nota{display:none}
+@media (max-width:759px){
+  .mapa-e-camadas{flex-direction:column;flex:none}
+  .mapa-e-camadas>.moldura{flex:none;height:44vh}
+  .outras-prof{width:auto;flex-direction:row;flex:none}
+  .outra-prof{flex:1;min-width:0} .outra-prof img{max-height:18vh}
+  .chips-mapas{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none} .chips-mapas button{flex:none}
+}
+.tela-cheia{position:absolute;left:10px;bottom:10px;z-index:2;background:rgba(11,17,2,.6);border:1px solid var(--vidro-borda);color:var(--txt);border-radius:999px;padding:.45em 1em;font:600 .66rem Menlo,monospace;letter-spacing:.16em;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.painel.miniatura .tela-cheia,.painel.miniatura .camadas{display:none}
+/* O VISOR — "quando eu quiser olhar tem que ficar usual": tela cheia de verdade, como um visualizador de imagem */
+#visor{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;background:radial-gradient(120% 90% at 50% 40%,rgba(27,39,4,.985),rgba(6,9,1,.995))}
+#visor.on{display:flex}
+#visor .barra{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;border-bottom:1px solid rgba(196,202,60,.18)}
+#visor .barra .titulo{margin:0;font-size:clamp(1rem,1.4vw,1.5rem);flex:1 1 260px}
+#visor .barra .camadas{margin:0}
+#visor .barra a,#visor .barra button.acao{background:rgba(196,202,60,.08);border:1px solid rgba(196,202,60,.35);color:var(--txt);border-radius:999px;padding:.5em 1.1em;font:600 .7rem Menlo,monospace;letter-spacing:.14em;cursor:pointer;text-decoration:none}
+#visor .quadro{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;cursor:grab;touch-action:none}
+#visor .quadro img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#visor .zoom-ctl{display:flex;right:18px;bottom:calc(18px + env(safe-area-inset-bottom))}
+#visor .dica{position:absolute;left:18px;bottom:calc(22px + env(safe-area-inset-bottom));font:600 .62rem Menlo,monospace;letter-spacing:.14em;color:var(--mudo);pointer-events:none}
+
+/* MODO FAZENDA / GRUPO (02/out/2026, 22:10 — João: "trazer um quadrado para o lado esquerdo com toda a navegação
+   de todas as opções e as janelas irem alterando no lado direito maior, mantendo a mesma modernidade"). Em espera
+   só a folha no meio; aberto o dossiê, a folha sobe pequena, a navegação de vidro fica à esquerda e as janelas
+   da seção escolhida à direita. */
+#navFazenda{display:none}
+body.modo-fazenda{--folha-h:clamp(36px,4.6vh,58px);--topo-paineis:calc(14px + env(safe-area-inset-top) + var(--folha-h) + 12px);--base-paineis:calc(98px + env(safe-area-inset-bottom))}
+body.modo-fazenda #estado{opacity:0}
+body.modo-fazenda #navFazenda{display:flex;flex:none;width:clamp(250px,21vw,420px);flex-direction:column;gap:.5em;overflow:hidden;cursor:default;padding:clamp(12px,1vw,22px) clamp(12px,1vw,22px)}
+#navFazenda .cab{margin-bottom:.2em}
+#navFazenda .titulo{font-size:clamp(1.05rem,7cqi,1.9rem)}
+#navFazenda .lista{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:4px;scrollbar-width:thin}
+#navFazenda .item{display:flex;align-items:center;gap:.6em;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--txt);border-radius:12px;padding:.5em .7em;font-size:.95rem;cursor:pointer;transition:background .2s,border-color .2s}
+#navFazenda .item:hover{background:rgba(196,202,60,.07);border-color:rgba(196,202,60,.18)}
+#navFazenda .item.on{background:linear-gradient(90deg,rgba(196,202,60,.2),rgba(196,202,60,.04));border-color:rgba(214,220,110,.45);box-shadow:inset 3px 0 0 var(--ouro)}
+#navFazenda .item i{flex:none;width:1.5em;height:1.5em;display:grid;place-items:center;color:var(--ciano);font-style:normal}
+#navFazenda .item i svg{width:1.2em;height:1.2em}
+#navFazenda .item span{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#navFazenda .item small{flex:none;font:600 .62rem Menlo,monospace;letter-spacing:.06em;color:var(--mudo);max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#navFazenda .item small.alerta{color:var(--ouro)}
+#navFazenda .fazendas{display:flex;flex-wrap:wrap;gap:5px;flex:none;max-height:9.5em;overflow-y:auto}
+#navFazenda .fazendas button{background:rgba(196,202,60,.05);border:1px solid rgba(196,202,60,.25);color:var(--mudo);border-radius:999px;padding:.3em .75em;font-size:.78rem;cursor:pointer}
+#navFazenda .fazendas button.on{color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border-color:transparent}
+#navFazenda .rodape{flex:none;display:flex;gap:8px;justify-content:space-between;align-items:center;border-top:1px solid rgba(196,202,60,.15);padding-top:.6em}
+#navFazenda .rodape button{background:rgba(11,17,2,.3);border:1px solid var(--vidro-borda);color:var(--mudo);border-radius:999px;font:600 .62rem Menlo,monospace;letter-spacing:.16em;padding:.5em 1em;cursor:pointer}
+#navFazenda .rodape .nota{margin:0;font-size:.7rem}
+/* TRILHA + VOLTAR (03/out/2026): sempre à vista com janela aberta */
+#trilha{display:none}
+body.com-trilha #trilha{display:flex;position:absolute;top:0;right:clamp(16px,2.2vw,56px);left:clamp(16px,2.2vw,56px);height:38px;align-items:center;gap:10px;z-index:2;min-width:0}
+body.com-trilha:not(.modo-fazenda) #paineis,body.com-trilha.modo-fazenda #paineis{padding-top:46px}
+#trilha .voltar{flex:none;background:linear-gradient(90deg,#a2a72a,#c4ca3c);color:#1b2704;border:0;border-radius:999px;font:700 .72rem Menlo,monospace;letter-spacing:.16em;padding:.6em 1.1em;cursor:pointer;box-shadow:0 0 18px rgba(162,167,42,.35)}
+#trilha .inicio{flex:none;width:2.3em;height:2.3em;border-radius:50%;border:1px solid var(--vidro-borda);background:rgba(11,17,2,.5);display:grid;place-items:center;cursor:pointer}
+#trilha .migalhas{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;font-size:.85rem;padding:.35em .9em;border-radius:999px;background:rgba(11,17,2,.45);border:1px solid rgba(196,202,60,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#trilha .migalhas button{background:none;border:0;color:var(--ciano);cursor:pointer;font-size:inherit;padding:0;text-decoration:underline dotted rgba(196,202,60,.5);text-underline-offset:3px}
+#trilha .migalhas b{color:var(--txt);overflow:hidden;text-overflow:ellipsis}
+#trilha .migalhas i{color:var(--mudo);font-style:normal}
+#musica{background:rgba(20,29,5,.4);border:1px solid var(--vidro-borda);color:var(--mudo);border-radius:999px;font:600 12px Menlo,monospace;width:2.2em;height:2.2em;cursor:pointer}
+#musica.on{color:var(--ouro);border-color:rgba(249,163,34,.5);box-shadow:0 0 12px rgba(249,163,34,.25)}
+@media (max-width:759px){
+  body.com-trilha #trilha{position:static;order:1;margin:0 16px 8px;height:auto;flex-wrap:nowrap}
+  body.com-trilha:not(.modo-fazenda) #paineis,body.com-trilha.modo-fazenda #paineis{padding-top:0}
+  #navFazenda{order:0} .grade{order:2} #pontos{order:3}
+  #trilha .migalhas{font-size:.75rem}
+}
+/* MOSAICO — o resumo em ladrilhos que enchem a área (sem rolar e sem faixa vazia) */
+.painel.compacto .cab{margin-bottom:.35em}
+.painel.compacto .titulo{font-size:clamp(.95rem,3cqi,1.35rem)}
+.painel.compacto .sub{display:none}
+.fatos{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:none;font-size:.8rem}
+.fatos b{color:var(--ouro);font-size:1.05rem;margin-right:4px}
+.fatos span{padding:.15em .6em;border-radius:999px;border:1px solid rgba(196,202,60,.22);color:var(--txt);background:rgba(11,17,2,.3)}
+.fatos span.alta{color:#8fc04a;border-color:rgba(143,192,74,.5)} .fatos span.baixa{color:#ff8a6b;border-color:rgba(255,138,107,.5)}
+.grade.mosaico{grid-auto-flow:dense}
+.grade.mosaico>.painel{max-height:none;align-self:stretch !important;padding:clamp(10px,.9vw,20px) clamp(12px,1vw,22px)}
+.grade.mosaico>.painel .cab{margin-bottom:.4em}
+.grade.mosaico>.painel .titulo{font-size:clamp(.95rem,5.2cqi,1.45rem)}
+.grade.mosaico .kpis{grid-template-columns:repeat(auto-fit,minmax(clamp(74px,17cqi,150px),1fr));gap:6px;margin:0}
+.grade.mosaico .kpi{padding:clamp(5px,1.4cqi,10px) clamp(6px,1.6cqi,12px)}
+.grade.mosaico .kpi b{font-size:clamp(1rem,4.4cqi,2.2rem)}
+.grade.mosaico .kpi span{font-size:max(14px,.58rem);margin-top:.3em}
+.grade.mosaico table{font-size:clamp(.78rem,3.4cqi,.98rem)}
+.grade.mosaico td,.grade.mosaico th{padding:.3em .4em}
+.painel[data-tipo=largo] .corpo{display:flex;flex-direction:column;gap:.4em}
+.painel[data-tipo=largo] .corpo>svg.graf{flex:1 1 auto;min-height:clamp(180px,34vh,440px);height:100%;width:100%;max-height:none}
+.painel.compacto[data-tipo=largo] .corpo>table{flex:none}
+.painel.compacto .chips-talhao{margin-bottom:2px}
+.painel.compacto .legenda-cor{font-size:.55rem}
+.painel[data-tipo=ladrilho] .corpo{display:flex;flex-direction:column;gap:.5em;overflow:hidden}
+.painel[data-tipo=ladrilho] .corpo>svg{flex:1 1 auto;min-height:0;width:100%;height:100%}
+/* barras horizontais pequenas (alvos, produtos) */
+.barrinhas{display:grid;grid-template-columns:minmax(0,1fr) 38% auto;gap:.32em .6em;align-items:center;font-size:.86rem}
+.barrinhas .b{height:.5em;border-radius:999px;background:rgba(196,202,60,.08);overflow:hidden}
+.barrinhas .b i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--ciano2),var(--ciano))}
+.barrinhas .nome{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barrinhas .n{font-variant-numeric:tabular-nums;color:var(--mudo);font-size:.8rem}
+.lista-curta{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.35em;font-size:.88rem}
+.lista-curta li{display:flex;gap:.5em;align-items:baseline}
+.lista-curta li::before{content:"";flex:none;width:.45em;height:.45em;border-radius:1px;background:var(--ouro);box-shadow:0 0 8px var(--ouro);transform:translateY(-.1em)}
+.lista-curta li.ok::before{background:var(--ciano);box-shadow:0 0 8px var(--ciano)}
+.janelas{display:flex;gap:4px;align-items:center;flex:none;font:600 .62rem Menlo,monospace}
+.janelas span{flex:1;text-align:center;padding:.25em 0;border-radius:6px;border:1px solid rgba(196,202,60,.25);color:var(--mudo)}
+.janelas span.ok{color:#1b2704;background:var(--ciano);border-color:transparent}
+.janelas span.nao{color:var(--perigo);border-color:rgba(255,107,107,.4)}
+.janelas em{font-style:normal;color:var(--mudo);letter-spacing:.1em;margin-left:2px}
+.painel[data-tipo=ladrilho] .corpo>svg.mini{min-height:44px}
+.chips-talhao{display:flex;flex-wrap:wrap;gap:5px;flex:none}
+.chips-talhao button{background:rgba(196,202,60,.05);border:1px solid rgba(196,202,60,.25);color:var(--mudo);border-radius:999px;padding:.25em .7em;font-size:.76rem;cursor:pointer}
+.chips-talhao button.on{color:var(--txt);border-color:var(--ouro);box-shadow:0 0 10px rgba(249,163,34,.3)}
+svg.mini{display:block;width:100%;height:100%;overflow:visible}
+/* desenho (mapa dos talhões, fazendas do grupo) ocupa a janela inteira */
+.corpo:has(> svg.mini){display:flex;flex-direction:column}
+.corpo > svg.mini{flex:1 1 auto;min-height:120px}
+svg.evol{display:block;width:100%;height:100%;max-height:100%}
+/* a linha da lavoura: no celular ela rola para o lado (largura de leitura), na tela grande cabe inteira */
+.rolagem{flex:1 1 auto;min-height:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+@media (max-width:759px){ .rolagem svg.evol{width:920px;height:auto;max-height:none} }
+.legenda-cor{display:flex;flex-wrap:wrap;gap:.4em 1em;font:600 .6rem Menlo,monospace;letter-spacing:.08em;color:var(--mudo);flex:none}
+.legenda-cor b{display:inline-block;width:.9em;height:.9em;border-radius:3px;vertical-align:-.12em;margin-right:.35em}
+.calor{display:grid;gap:2px;font-size:.72rem;font-variant-numeric:tabular-nums}
+.calor div{padding:.18em .3em;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calor .h{color:var(--mudo);font:600 .58rem Menlo,monospace;letter-spacing:.08em;text-align:center;background:none}
+.calor .t{color:var(--txt);background:none;text-align:left}
+@media (max-width:759px){
+  /* celular: a navegação vira uma barra de botões no alto, uma janela por vez embaixo */
+  body.modo-fazenda{--folha-h:22px;--topo-paineis:calc(52px + env(safe-area-inset-top));--base-paineis:calc(150px + env(safe-area-inset-bottom))}
+  body.modo-fazenda #esfera{top:calc(30px + env(safe-area-inset-top))}
+  body.modo-fazenda #navFazenda{width:auto;flex-direction:row;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;padding:6px 10px;margin:0 16px 8px;border-radius:14px;scrollbar-width:none}
+  body.modo-fazenda #navFazenda::-webkit-scrollbar{display:none}
+  #navFazenda .cab,#navFazenda .rodape .nota{display:none}
+  #navFazenda .lista{flex-direction:row;overflow:visible;gap:6px}
+  #navFazenda .item{width:auto;flex:none;padding:.4em .7em;font-size:.82rem;border-color:rgba(196,202,60,.22);border-radius:999px}
+  #navFazenda .item small{display:none}
+  #navFazenda .fazendas{flex-wrap:nowrap;max-height:none;overflow:visible;order:2}
+  #navFazenda .rodape{order:3}
+  #navFazenda .fazendas button{flex:none}
+  #navFazenda .rodape{border:0;padding:0}
+  body.modo-fazenda .marca span{display:none}
+}
+/* COMANDOS DE APRESENTAÇÃO (04/out/2026, js/controle.js) */
+/* o SINAL: a confirmação leve de um comando ("feito", sem discurso) */
+#sinal{position:fixed;z-index:22;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translate(-50%,-8px);display:flex;align-items:center;gap:.6em;
+  padding:.45em 1em;border-radius:999px;background:rgba(11,17,2,.72);border:1px solid var(--vidro-borda);color:var(--txt);
+  font:600 11px Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 0 30px rgba(162,167,42,.2)}
+#sinal.on{opacity:1;transform:translate(-50%,0)}
+#sinal i{font-style:normal;color:var(--ouro);font-size:14px;letter-spacing:0}
+/* a transparência que VOLTA pelo histórico ("volta aquela") entra voando de um lado */
+.painel.do-historico{animation:materializa-volta .8s cubic-bezier(.16,.9,.2,1) var(--atraso,0ms) both}
+.painel.do-historico.da-direita{--voo-x:42vw}
+@keyframes materializa-volta{
+  0%{opacity:0;transform:translateX(var(--voo-x,-42vw)) rotateY(18deg) scale(.82);filter:blur(10px) brightness(1.7)}
+  60%{opacity:1;filter:blur(0) brightness(1.15)}
+  100%{opacity:1;transform:none;filter:none}}
+/* MODO APRESENTAÇÃO: menos legenda (o que o João diz some), janelas maiores (a folha encolhe), sem sugestões */
+body.modo-apresentacao{--folha-h:12vmin;--base-paineis:calc(110px + env(safe-area-inset-bottom))}
+body.modo-apresentacao #legenda .voce,body.modo-apresentacao .explorar,body.modo-apresentacao #vozChip{display:none !important}
+body.modo-apresentacao #legenda{font-size:.9em;opacity:.85}
+body.modo-apresentacao .painel .titulo{font-size:1.12em}
+/* PALMAS: a folha brilha enquanto as palmas tocam (as partículas pulsam pelo js) */
+body.palmas #esfera{filter:drop-shadow(0 0 28px rgba(249,163,34,.55)) brightness(1.25)}
+@media (prefers-reduced-motion:reduce){ .painel.do-historico{animation:aparece .25s ease-out var(--atraso,0ms) both} }
+/* movimento reduzido (acessibilidade): sem voo nem varredura, as janelas só aparecem */
+@media (prefers-reduced-motion:reduce){
+  .painel{animation:aparece .25s ease-out var(--atraso,0ms) both}
+  .painel::before,.moldura .quadro::after{animation:none}
+  .painel.saindo{animation:some .2s ease-in both}
+  #esfera,#estado{transition:none}
+}
+@keyframes aparece{from{opacity:0}to{opacity:1}}
+@keyframes some{to{opacity:0}}
+/* REGRAVAÇÃO (04/out/2026, js/regravar.js): o botão na abertura e a tela limpa enquanto grava — sem cursor,
+   sem a caixa de texto e o microfone, sem o selo da voz */
+#gravarRegravacao{font:600 13px Menlo,monospace;letter-spacing:.3em;color:#1b2704;background:linear-gradient(90deg,#a2a72a,#c4ca3c);border:0;padding:16px 28px;cursor:pointer;box-shadow:0 0 40px rgba(162,167,42,.45)}
+#gravarRegravacao:disabled{opacity:.35;cursor:wait;box-shadow:none}
+#regravarEstado{margin-top:14px;min-height:1.2em;color:var(--mudo);font-size:13px;line-height:1.5}
+#regravarEstado a{color:var(--ciano)}
+.regravar-outra{margin-top:16px;background:none;border:1px solid var(--borda);color:var(--txt);font:600 11px Menlo,monospace;letter-spacing:.18em;padding:10px 14px;cursor:pointer}
+body.regravando,body.regravando *{cursor:none !important}
+body.regravando .controles,body.regravando #vozChip,body.regravando #limpar{display:none !important}
+/* "é adequado?" — o último ano com a classe da escala da casa (04/out/2026): uma camada por bloco,
+   uma linha por nutriente: nome · média · classe · barra com a % dos pontos em cada classe */
+.leitura-solo{display:flex;flex-direction:column;gap:.55em}
+.lt-camada{border:1px solid rgba(196,202,60,.2);border-radius:10px;padding:.45em .7em;background:rgba(11,17,2,.28)}
+.lt-cab{font:600 .62rem Menlo,monospace;letter-spacing:.16em;color:var(--mudo);text-transform:uppercase;margin-bottom:.25em}
+.lt-linha{display:grid;grid-template-columns:minmax(4.5em,7em) minmax(3.5em,5em) 7.5em minmax(8em,1fr);grid-template-areas:"nome media classe barra" "nome media classe faixa";column-gap:.8em;row-gap:.15em;align-items:center;padding:.2em 0}
+.lt-linha+.lt-linha{border-top:1px solid rgba(196,202,60,.12)}
+.lt-nome{grid-area:nome;color:var(--txt);font-weight:600}
+.lt-media{grid-area:media;color:var(--ouro);font-size:1.5rem;font-variant-numeric:tabular-nums;text-align:right}
+.lt-classe{grid-area:classe;justify-self:start;font:700 .78rem Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid;border-radius:999px;padding:.2em .8em}
+.lt-classe.sem{color:var(--mudo);border-color:rgba(179,169,122,.4);font-weight:600;letter-spacing:.08em}
+.lt-barra{grid-area:barra;display:flex;height:1.35em;border-radius:6px;overflow:hidden;gap:2px}
+.lt-barra i{font:700 .66rem Menlo,monospace;font-style:normal;color:#0b1102;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;min-width:1.6em}
+.lt-sem{grid-area:barra;color:var(--mudo);font-size:.82rem;font-style:italic}
+.lt-faixa{grid-area:faixa;color:var(--mudo);font:600 .6rem Menlo,monospace;letter-spacing:.06em}
+.lt-faixa b{color:var(--txt);font-weight:700}
+@media (max-width:640px){.lt-linha{grid-template-columns:auto auto 1fr;grid-template-areas:"nome media classe" "barra barra barra" "faixa faixa faixa"}}
+.lt-cab span{text-transform:none;letter-spacing:.04em;font-style:italic}
+.lt-camada.sem-escala .lt-linha{padding:.05em 0}
+.lt-camada.sem-escala .lt-media{font-size:1.15rem}

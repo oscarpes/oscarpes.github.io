@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0b1102">
+<!-- 02/out/2026: instalável no Chrome/Safari do computador ("Instalar Oscarpes"):
+     abre em janela própria com o ícone da folha. Sempre carrega do site, então
+     a versão nova chega sozinha (o carimbo VERSAO recarrega a janela aberta). -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone-ouro-192.png">
+<link rel="apple-touch-icon" href="icone-ouro-192.png">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Oscarpes ao vivo</title>
+<!--
+  OSCARPES AO VIVO — a conversa por voz que abre painéis na tela (02/out/2026)
+  ============================================================================
+  João: "o cliente abriria o app ou o site e apareceria uma especie de um agente
+  esperando uma pergunta dele, conforme ele fosse conversando e pedindo as
+  coisas ela ia abrindo na tela, e ele ia dizendo como estava as coisas" —
+  "mais moderno e futurista", "ouvindo e respondendo em tempo integral", e
+  "não vai apagar o que fizemos": esta página é SEPARADA do app (public/), não
+  toca em tela nenhuma; o app normal continua igual.
+
+  COMO FUNCIONA
+  - Ouve pelo navegador (SpeechRecognition contínuo), manda o texto para a MESMA
+    rota do Jarvis (whatsapp/voz, com telas:true) e fala a resposta.
+  - O servidor devolve, além da fala, o RESULTADO das consultas que o agente fez
+    (chuva, painel do monitoramento, fertilidade, contas, agenda…), já filtrado
+    pelo cargo de quem está logado. Esta página só DESENHA — não lê banco.
+  - Login: a mesma sessão do app (localStorage sb-<ref>-auth-token, mesmo
+    endereço). Sem sessão, manda entrar no app.
+  - A VOZ é um módulo trocável (objeto Voz abaixo): hoje a melhor voz pt-BR do
+    aparelho; o João vai escolher a definitiva depois.
+  - Nome na tela: "Oscarpes" (decisão do João, 01/out: Jarvis é só o projeto).
+
+  A chave pública do Supabase (o marcador em js/base.js) é trocada na publicação
+  (scripts/deploy-web.sh); ela é pública por natureza, só não mora no git.
+
+  ARQUIVOS (03/out/2026 — o arquivo único de ~4.250 linhas virou módulos, sem mudar nada na tela):
+  este index.html (marcação, o carregador de tema e a VERSAO), css/ao-vivo.css e js/*.js (módulos
+  ES puros, sem empacotador). Só js/main.js entra por <script type="module">; ele puxa os outros
+  na ordem do arquivo antigo (a CORRENTE DE CARGA, explicada em js/main.js). Toda URL de módulo e
+  de CSS leva ?v=20261010213811 — a publicação troca pela hora em TODOS os arquivos de ao-vivo/.
+  Mapa dos módulos: docs/MAPA-DO-APP.md.
+-->
+<link rel="stylesheet" href="css/ao-vivo.css?v=20261010213811">
+<!-- os módulos (js/) baixam todos JUNTOS, já no começo (sem esperar um import descobrir o outro) -->
+<link rel="modulepreload" href="js/base.js?v=20261010213811">
+<link rel="modulepreload" href="js/cena.js?v=20261010213811">
+<link rel="modulepreload" href="js/raizes.js?v=20261010213811">
+<link rel="modulepreload" href="js/voz.js?v=20261010213811">
+<link rel="modulepreload" href="js/ouvido.js?v=20261010213811">
+<link rel="modulepreload" href="js/servidor.js?v=20261010213811">
+<link rel="modulepreload" href="js/arranjo.js?v=20261010213811">
+<link rel="modulepreload" href="js/telas.js?v=20261010213811">
+<link rel="modulepreload" href="js/comandos.js?v=20261010213811">
+<link rel="modulepreload" href="js/desenhos.js?v=20261010213811">
+<link rel="modulepreload" href="js/mapas.js?v=20261010213811">
+<link rel="modulepreload" href="js/visor.js?v=20261010213811">
+<link rel="modulepreload" href="js/fazenda.js?v=20261010213811">
+<link rel="modulepreload" href="js/secoes.js?v=20261010213811">
+<link rel="modulepreload" href="js/evolucao.js?v=20261010213811">
+<link rel="modulepreload" href="js/navegacao.js?v=20261010213811">
+<link rel="modulepreload" href="js/musica.js?v=20261010213811">
+<link rel="modulepreload" href="js/controle.js?v=20261010213811">
+<link rel="modulepreload" href="js/demo.js?v=20261010213811">
+<link rel="modulepreload" href="js/apresentacao.js?v=20261010213811">
+<link rel="modulepreload" href="js/porta-reuniao.js?v=20261010213811">
+<link rel="modulepreload" href="js/regravar.js?v=20261010213811">
+<link rel="modulepreload" href="js/main.js?v=20261010213811">
+<script>
+// ---------------------------------------------------------------------------
+// TEMAS DE EMPRESA (03/out/2026) — João: "a ideia é já ir personalizando o
+// Jarvis para as empresas, esse é o primeiro exercício". Em vez de copiar esta
+// página para cada empresa (e ter N páginas para consertar), o MOTOR é um só e
+// a marca vem de um TEMA: public/ao-vivo/temas/<id>/tema.json (+ tema.css,
+// logo para as bolinhas, ícones e manifesto). Ver docs/ao-vivo/TEMAS.md.
+//
+//  - Sem ?tema= (ou ?tema=oscarpes): NADA roda aqui além de window.TEMA =
+//    TEMA_PADRAO. A página da Oscarpes fica exatamente como era (o portão
+//    conferir-ao-vivo-voz.ts compara o padrão com temas/oscarpes/tema.json).
+//  - Com ?tema=<id>: lê o tema.json e o tema.css SÍNCRONOS (antes da 1ª
+//    pintura — nada de piscar a marca da Oscarpes), troca título, manifesto,
+//    ícones e cor da barra, e REPINTA as cores da marca: o tema traz uma
+//    tabela "cor da Oscarpes → cor da empresa" e ela vale para o CSS desta
+//    página E para tudo o que o JS desenha depois (painéis, SVG dos gráficos),
+//    por um MutationObserver. Cores que têm SIGNIFICADO (vermelho de alerta,
+//    azul da chuva, paleta dos mapas de fertilidade) não estão na tabela e
+//    não mudam.
+//  - Tema que não existe no site (não publicado — ver TEMAS_PUBLICOS no
+//    deploy-web.sh) cai na Oscarpes, calado.
+//  - O tema é DADO (JSON + CSS), nunca código: uma empresa não injeta script.
+// ---------------------------------------------------------------------------
+const TEMA_PADRAO = {
+  id: 'oscarpes', nome: 'Oscarpes', titulo: 'Oscarpes ao vivo', corDaBarra: '#0b1102',
+  manifesto: 'manifest.webmanifest', icone: 'icone-ouro-192.png', iconeInicio: 'folha.png',
+  chamada: { extras: [], dizer: 'Oscar' },
+  saudacao: { ios: 'Olá. Estou ouvindo. Pode perguntar.', outros: 'Olá. Estou ouvindo. Pode perguntar; depois, é só me chamar de Oscar.' },
+  musica: true, fundo: 'raizes',
+  particulas: { imagem: 'folha.png', acento: null, ouroAleatorio: 0.14, larguraMax: null,
+    espera: '#c4ca3c', ouvindo: '#e1d49b', falando: '#f9b84a', ouro: '#f9b84a', halo: '#a2a72a', anel: '#f9a322', nucleo: [1, 1, 0.94] },
+  marca: null, abertura: null, trocaDeCores: {}, trocaDeTexto: [], fonteGoogle: null,
+};
+// <trocarCores> — função pura (o portão roda ela): troca as cores e os textos de um CSS/atributo
+function criarTroca(trocaDeCores, trocaDeTexto) {
+  const hex = (h) => h.replace('#', '').toLowerCase();
+  const rgb = (h) => [0, 2, 4].map((i) => parseInt(hex(h).slice(i, i + 2), 16)).join(',');
+  const porHex = {}, porRgb = {};
+  for (const [de, para] of Object.entries(trocaDeCores || {})) { porHex[hex(de)] = '#' + hex(para); porRgb[rgb(de)] = rgb(para); }
+  const textos = (trocaDeTexto || []).filter((p) => Array.isArray(p) && p[0]);
+  if (!Object.keys(porHex).length && !textos.length) return null;
+  return (s) => {
+    if (!s) return s;
+    let t = String(s)
+      .replace(/#([0-9a-fA-F]{6})\b/g, (m, h) => porHex[h.toLowerCase()] || m)
+      .replace(/(rgba?\()\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/g, (m, f, r, g, b) => { const n = porRgb[`${r},${g},${b}`]; return n ? f + n : m; });
+    // idempotente: "Menlo," → "\"Outfit\",Menlo," não vira "\"Outfit\",\"Outfit\",Menlo," quando o
+    // observador passa de novo no mesmo atributo
+    for (const [de, para] of textos) {
+      const antes = para.endsWith(de) ? para.slice(0, para.length - de.length) : null;
+      const pedacos = t.split(de);
+      t = pedacos.reduce((acc, pd, i) => (i === 0 ? pd : acc + (antes !== null && acc.endsWith(antes) ? de : para) + pd), '');
+    }
+    return t;
+  };
+}
+// </trocarCores>
+window.TEMA = TEMA_PADRAO;
+(function carregarTema() {
+  let id = '';
+  try { id = String(new URLSearchParams(location.search).get('tema') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40); } catch (e) {}
+  if (!id || id === TEMA_PADRAO.id) return;
+  const base = 'temas/' + id + '/';
+  const ler = (arq) => { const x = new XMLHttpRequest(); x.open('GET', base + arq, false); x.send(); if (x.status !== 200) throw new Error(arq + ' ' + x.status); return x.responseText; };
+  let t, css = '';
+  try { t = JSON.parse(ler('tema.json')); } catch (e) { console.log('[ao-vivo] tema "' + id + '" não está no site — segue o padrão', e && e.message); return; }
+  try { if (t.css) css = ler(t.css); } catch (e) { console.log('[ao-vivo] tema sem o css', e && e.message); }
+  const caminho = (a) => (!a || /^(https?:|data:|\/)/.test(a) ? a : base + a);
+  const T = Object.assign({}, TEMA_PADRAO, t, { id, base });
+  T.chamada = Object.assign({}, TEMA_PADRAO.chamada, t.chamada);
+  T.saudacao = Object.assign({}, TEMA_PADRAO.saudacao, t.saudacao);
+  T.particulas = Object.assign({}, TEMA_PADRAO.particulas, t.particulas);
+  T.particulas.imagem = caminho(T.particulas.imagem);
+  T.manifesto = caminho(t.manifesto) || TEMA_PADRAO.manifesto;
+  T.icone = caminho(t.icone) || TEMA_PADRAO.icone;
+  T.iconeInicio = t.iconeInicio === null ? null : caminho(t.iconeInicio) || TEMA_PADRAO.iconeInicio;
+  if (T.marca) T.marca = Object.assign({}, T.marca, { imagem: caminho(T.marca.imagem) });
+  if (T.abertura) T.abertura = Object.assign({}, T.abertura, { imagem: caminho(T.abertura.imagem) });
+  window.TEMA = T;
+  const raiz = document.documentElement;
+  raiz.classList.add('tematizado', 'tema-' + id);
+  document.title = T.titulo;
+  const pega = (sel, criar) => { let el = document.querySelector(sel); if (!el && criar) { el = criar(); document.head.appendChild(el); } return el; };
+  const m = pega('link[rel=manifest]'); if (m) m.setAttribute('href', T.manifesto);
+  document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon]').forEach((l) => l.setAttribute('href', T.icone));
+  const cor = pega('meta[name=theme-color]'); if (cor) cor.setAttribute('content', T.corDaBarra);
+  // tema de teste fechado (ex.: material confidencial da empresa): fora dos buscadores
+  if (T.naoIndexar) { const rb = document.createElement('meta'); rb.name = 'robots'; rb.content = 'noindex,nofollow'; document.head.appendChild(rb); }
+  if (T.fonteGoogle) {
+    const f = document.createElement('link'); f.rel = 'stylesheet';
+    f.href = 'https://fonts.googleapis.com/css2?family=' + String(T.fonteGoogle).replace(/ /g, '+') + '&display=swap';
+    document.head.appendChild(f);
+  }
+  const troca = criarTroca(T.trocaDeCores, T.trocaDeTexto);
+  window.TEMA_TROCA = troca;
+  // o estilo da página mora em css/ao-vivo.css (03/out/2026): com troca de cores ele é lido como
+  // texto (já está no cache — o <link> acabou de carregar), repintado e posto no MESMO lugar como
+  // <style> — a mesma cascata de quando ele era o <style> desta página
+  const principal = document.querySelector('link[rel=stylesheet][href^="css/ao-vivo.css"]');
+  if (troca && principal) {
+    let textoCss = null;
+    try { const x = new XMLHttpRequest(); x.open('GET', principal.getAttribute('href'), false); x.send(); if (x.status === 200) textoCss = x.responseText; } catch (e) {}
+    if (textoCss != null) { const st = document.createElement('style'); st.textContent = troca(textoCss); principal.replaceWith(st); }
+  }
+  // a marca da Oscarpes fica escondida até o script principal pôr a do tema (sem piscar)
+  const s = document.createElement('style'); s.id = 'tema-css';
+  s.textContent = 'html.tematizado:not(.tema-pronto) .marca,html.tematizado:not(.tema-pronto) #abertura .caixa>img,html.tematizado:not(.tema-pronto) #abertura h1{visibility:hidden}\n' + css;
+  document.head.appendChild(s);
+  // MÓDULOS DO TEMA (03/out/2026): código NOSSO, do repositório, que só este tema carrega (ex.: um
+  // playbook de vendas). Só nome simples "x.js" da pasta do tema, e só depois do motor (os módulos
+  // ES rodam antes do DOMContentLoaded). Sem "modulos" no tema.json — e na Oscarpes — nada.
+  const mods = (Array.isArray(t.modulos) ? t.modulos : []).filter((n) => /^[a-z0-9-]+\.js$/.test(n));
+  T.modulos = mods;
+  if (mods.length) document.addEventListener('DOMContentLoaded', () => mods.forEach((n) => { const e = document.createElement('script'); e.src = base + n; document.body.appendChild(e); }));
+  if (!troca || !('MutationObserver' in window)) return;
+  // o que o JS desenha depois (innerHTML dos painéis, SVG) passa pela mesma troca
+  const ATR = ['style', 'fill', 'stroke', 'stop-color', 'color', 'font-family'];
+  const repintar = (el) => { for (const a of ATR) { const v = el.getAttribute && el.getAttribute(a); if (v) { const n = troca(v); if (n !== v) el.setAttribute(a, n); } } };
+  // ETIQUETAS DO TEMA (03/out/2026, noite): nomes que a marca destaca (ex.: híbridos "B2505PWU" como
+  // etiqueta laranja) — o tema dá o padrão (tema.json "etiquetas"), aqui só embrulha o texto num
+  // <span class="etiqueta-tema"> dentro das janelas (nunca em SVG). Sem "etiquetas" no tema: nada.
+  let ETQ = null; try { if (T.etiquetas) ETQ = new RegExp(T.etiquetas, 'g'); } catch (e) {}
+  const etiquetar = (no) => {
+    if (!ETQ || !no.closest || !no.closest('.painel')) return;
+    const w = document.createTreeWalker(no, NodeFilter.SHOW_TEXT), alvos = [];
+    for (let t = w.nextNode(); t; t = w.nextNode()) { ETQ.lastIndex = 0; if (ETQ.test(t.data) && !t.parentElement.closest('.etiqueta-tema,svg,script,style')) alvos.push(t); }
+    for (const t of alvos) { const f = document.createDocumentFragment(); let i = 0; ETQ.lastIndex = 0;
+      t.data.replace(ETQ, (m, ...r) => { const at = r[r.length - 2]; f.append(t.data.slice(i, at)); const sp = document.createElement('span'); sp.className = 'etiqueta-tema'; sp.textContent = m; f.append(sp); i = at + m.length; return m; });
+      f.append(t.data.slice(i)); t.replaceWith(f); }
+  };
+  const varrer = (no) => { if (no.nodeType !== 1) return; repintar(no); if (no.querySelectorAll) no.querySelectorAll('[style],[fill],[stroke],[stop-color],[color],[font-family]').forEach(repintar); etiquetar(no); };
+  new MutationObserver((lista) => { for (const r of lista) { if (r.type === 'attributes') repintar(r.target); else r.addedNodes.forEach(varrer); } })
+    .observe(raiz, { subtree: true, childList: true, attributes: true, attributeFilter: ATR });
+})();
+</script>
+</head>
+<body>
+<canvas id="fundo"></canvas>
+<div class="topo">
+  <div class="marca"><img src="folha.png" alt="" width="20" height="25" style="filter:drop-shadow(0 0 8px rgba(162,167,42,.6))"><span>OSCARPES · AO VIVO</span></div>
+  <span style="display:flex;align-items:center;gap:14px"><button id="musica" title="Música">♪</button><button id="limpar" title="Fechar as janelas (Esc)">FECHAR TUDO</button><span id="vozChip" style="font-size:10px;letter-spacing:.18em;color:var(--mudo)"></span><span id="hora">--:--</span></span>
+</div>
+<div id="esfera"></div>
+<div id="estado">EM ESPERA</div>
+<div id="paineis"><nav id="navFazenda" class="painel pronto" aria-label="Navegação da fazenda"></nav><div id="trilha" aria-label="Onde estou"></div><div class="grade" id="grade"></div><div id="miniaturas" aria-label="Outras janelas"></div><div id="pontos"></div></div>
+<div id="saindo"></div>
+<audio id="trilha-som" loop preload="none"></audio>
+<div id="visor" role="dialog" aria-label="Mapa em tela cheia"><div class="barra"><div class="titulo"></div><div class="camadas"></div><a class="baixar" download="mapa.png">BAIXAR PNG</a><button class="acao fechar-visor">FECHAR ✕</button></div><div class="quadro"><img alt=""></div><div class="dica"></div></div>
+<div id="legenda"></div>
+<div class="controles">
+  <button id="mic" title="Microfone" aria-label="Microfone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <form id="caixa"><input id="digitado" placeholder="Ou escreva aqui…" autocomplete="off"><button>ENVIAR</button></form>
+</div>
+<div id="abertura"><div class="caixa">
+  <img src="folha.png" alt="" width="62" height="76" style="margin-bottom:14px;filter:drop-shadow(0 0 22px rgba(162,167,42,.7))">
+  <h1>OSCARPES</h1>
+  <p>Converse comigo como numa ligação. Eu escuto o tempo todo enquanto esta tela estiver aberta, respondo em voz e abro na tela o que você pedir: chuva, monitoramento, fertilidade, contas, agenda.</p>
+  <button id="comecar">INICIAR</button>
+  <div style="margin-top:16px;display:none"><button id="baixarVoz" style="background:none;border:1px solid var(--borda);color:var(--txt);font:600 11px Menlo,monospace;letter-spacing:.18em;padding:10px 14px;cursor:pointer;display:none">BAIXAR VOZ NATURAL (63 MB, UMA VEZ)</button><div id="vozEstado" class="nota" style="margin-top:8px"></div></div>
+</div></div>
+<div id="aviso"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- VERSÃO (02/out/2026): o Chrome do iPhone do João seguiu com a página VELHA depois de três
+     publicações (o diagnóstico não tinha as marcas novas). A publicação carimba aqui a hora (e o
+     mesmo carimbo em todo ?v= dos módulos); ao abrir, a página confere a versão no servidor (sem
+     cache — conferirVersao em js/base.js lê ESTA linha do index.html) e, se mudou, recarrega uma vez. -->
+<script>
+const VERSAO = '20261010213811';
+// um módulo que não chegou (rede ruim no meio da carga) deixaria a página sem nada funcionando —
+// antes era um arquivo só e isso não acontecia: recarrega UMA vez nesta aba
+function moduloNaoChegou() { try { const k = 'ao-vivo-modulo-falhou'; if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, '1'); location.reload(); } } catch (e) {} }
+</script>
+<script type="module" src="js/main.js?v=20261010213811" onerror="moduloNaoChegou()"></script>
+</body>
+</html>

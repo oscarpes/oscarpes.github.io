@@ -1,0 +1,23 @@
+{
+  "_leia": "Tema de APRESENTAÇÃO da Oscarpes (motor em supabase/functions/_compartilhado/apresentacao, 05/out/2026). Paleta do PLANO.md seção 6; a folha oficial (assets/images/oscarpes-logo.png) é a abertura, o selo do canto (com OSCARPES ao lado: onde aparece o nome, vai a folha) e o símbolo final. 'Grupo Oscarpes' só em letra pequena (rodapé). Mudou? rode scripts/apresentacao/embutir.ts.",
+  "id": "oscarpes",
+  "nome": "Oscarpes",
+  "marca": "oscarpes",
+  "fundo": "raizes",
+  "cores": {
+    "fundo": "#060901", "fundoA": "#26350a", "fundoB": "#141d05", "painel": "#141d05", "destaque": "#3c4c03",
+    "acento": "#f9a322", "acento2": "#f9b84a", "alt": "#a2a72a",
+    "texto": "#f1e9c4", "mudo": "#b3a97a", "cinza": "#e1d49b", "creme": "#f1e9c4", "sobreAcento": "#1b2704"
+  },
+  "fontes": { "titulo": "Inter", "pesoTitulo": 700, "caixaAltaTitulo": true, "espacoTitulo": ".03em", "numero": "Inter", "pesoNumero": 700, "corpo": "Inter" },
+  "frase": "Manejo para altas produtividades",
+  "marcaTexto": "OSCARPES",
+  "seloTexto": "OSCARPES",
+  "rodapeDono": "do Grupo Oscarpes · Laboratório Agronômico",
+  "particulas": ["#c4ca3c", "#e1d49b", "#f9b84a", "#a2a72a", "#f1e9c4", "#c4ca3c"],
+  "ativos": {
+    "abertura": { "arquivo": "abertura.png", "largura": 300 },
+    "selo": { "arquivo": "selo.png" },
+    "simbolo": { "arquivo": "abertura.png", "largura": 360 }
+  }
+}

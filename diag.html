@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Diag">
+<title>Medidor Oscarpes</title>
+<style>
+  html,body{height:100%;margin:0;background:#0f1a02;color:#dfe8c0;font-family:-apple-system,monospace}
+  #wrap{min-height:100%;display:flex;flex-direction:column}
+  h1{font-size:16px;padding:12px;margin:0;background:#26340a;color:#A2A72A;text-align:center}
+  #dados{flex:1;padding:14px;font-size:15px;line-height:1.9}
+  b{color:#cfe08a}
+  .big{font-size:22px;color:#ffd23f;font-weight:bold}
+  #faixa{background:#c0392b;color:#fff;text-align:center;font-size:12px;
+    padding-bottom:env(safe-area-inset-bottom,0px)}
+  #faixa .rot{padding:6px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>MEDIDOR — tire um print desta tela</h1>
+  <div id="dados">carregando…</div>
+  <div id="faixa"><div class="rot">faixa vermelha = beirada de baixo</div></div>
+</div>
+<script>
+function medir(){
+  var probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);visibility:hidden';
+  document.body.appendChild(probe);
+  var cs = getComputedStyle(probe);
+  var envTop=cs.paddingTop, envBottom=cs.paddingBottom;
+  document.body.removeChild(probe);
+  var vv = window.visualViewport || {width:0,height:0};
+  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  var d = document.getElementById('dados');
+  d.innerHTML =
+    '<div class="big">env baixo (beira): ' + envBottom + '</div>' +
+    'env cima: <b>'+envTop+'</b><br>' +
+    'modo: <b>' + (standalone ? 'TELA CHEIA (PWA)' : 'aba do navegador') + '</b><br>' +
+    'tela (screen): <b>'+screen.width+' x '+screen.height+'</b><br>' +
+    'janela (inner): <b>'+window.innerWidth+' x '+window.innerHeight+'</b><br>' +
+    'visivel (visualViewport): <b>'+Math.round(vv.width)+' x '+Math.round(vv.height)+'</b><br>' +
+    'devicePixelRatio: <b>'+window.devicePixelRatio+'</b><br>' +
+    'dvh suportado: <b>'+(window.CSS && CSS.supports && CSS.supports('height:100dvh') ? 'sim' : 'nao')+'</b>';
+  document.getElementById('faixa').firstChild.textContent =
+    'faixa vermelha = env baixo = ' + envBottom;
+}
+medir();
+window.addEventListener('resize', medir);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', medir);
+</script>
+</body>
+</html>

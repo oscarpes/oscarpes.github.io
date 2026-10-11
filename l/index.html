@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Oscarpes</title></head>
+<body style="background:#0f1712;color:#e9f1ea;font:16px system-ui;display:grid;place-items:center;height:100vh;margin:0">
+<p>Abrindo…</p>
+<script>
+// LINK CURTO (10/out/2026): app.oscarpes.com.br/l/#<código> → o visor resolve o código (link_curto) e abre a página.
+var c = (location.hash || '').slice(1);
+location.replace('/apresentacao/' + (/^[A-Za-z0-9]{8}$/.test(c) ? '#c=' + c : ''));
+</script>
+</body></html>

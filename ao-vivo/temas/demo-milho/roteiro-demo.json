@@ -1,0 +1,136 @@
+{
+  "gerado_por": "scripts/demo-milho/gerar-ficha-demo.mjs",
+  "roteiro": [
+    {
+      "n": 1,
+      "fala": "Oscar, bom dia",
+      "onde": "servidor",
+      "resposta": "Bom dia, João! Em Sorriso, hoje … ; amanhã … (a previsão do dia, do servidor).",
+      "tela": "nenhuma (só a voz)",
+      "acao": "servidor"
+    },
+    {
+      "n": 2,
+      "fala": "Me mostra os resultados do OSC 2815 no Médio-Norte",
+      "tela": "mapa: as lavouras dele no Médio-Norte, à frente em destaque, e o selo X de Y",
+      "acao": "mapa:placar",
+      "hib": "OSC 2815",
+      "geo": {
+        "reg": "MT2"
+      },
+      "area": null,
+      "top": null,
+      "resposta": "No Médio-Norte, o OSC 2815 ficou à frente da média dos concorrentes em 76 de 97 lavouras, e em primeiro lugar na lavoura em 36 de 97."
+    },
+    {
+      "n": 3,
+      "fala": "Onde ele mais ganhou?",
+      "tela": "mapa: as cidades em destaque e a caixa do momento cidade a cidade",
+      "acao": "mapa:lugares",
+      "hib": "OSC 2815",
+      "geo": {
+        "reg": "MT2"
+      },
+      "area": null,
+      "top": null,
+      "resposta": "No Médio-Norte, os melhores resultados do OSC 2815 foram em Sorriso, 10 de 11 lavouras, 11,1 sacas a mais; em Feliz Natal, 6 de 6, 10,6 sacas a mais; e em Vera, 8 de 8, 10,3 sacas a mais: à frente da média dos concorrentes."
+    },
+    {
+      "n": 4,
+      "fala": "Abre a melhor área",
+      "tela": "mapa: voa até a área e abre a ficha de vidro (ranking inteiro)",
+      "acao": "mapa:area_por",
+      "hib": "OSC 2815",
+      "geo": {
+        "reg": "MT2"
+      },
+      "area": "demo-039",
+      "top": null,
+      "resposta": "O melhor resultado do OSC 2815 no Médio-Norte: Nova Mutum, plantio 12 de fevereiro. Ficou em primeiro lugar entre 7 híbridos, com 182,5 sacas por hectare, 27,2 sacas acima da média dos concorrentes."
+    },
+    {
+      "n": 5,
+      "fala": "Me mostra os destaques dele",
+      "tela": "mapa: passeio pelas 3 melhores áreas (7 s cada) — OPCIONAL",
+      "opcional": true,
+      "acao": "mapa:top",
+      "hib": "OSC 2815",
+      "geo": {
+        "reg": "MT2"
+      },
+      "area": null,
+      "top": [
+        "demo-039",
+        "demo-066",
+        "demo-025"
+      ],
+      "resposta": "Os três resultados de destaque do OSC 2815 no Médio-Norte, contra a média dos concorrentes. Nova Mutum, plantio 12 de fevereiro: primeiro lugar entre 7 híbridos, 27,2 sacas acima da média dos concorrentes. (e as outras duas, uma a uma)"
+    },
+    {
+      "n": 6,
+      "fala": "Fecha o mapa",
+      "tela": "o mapa fecha",
+      "acao": "tela:fechar_mapa",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Mapa fechado."
+    },
+    {
+      "n": 7,
+      "fala": "Como está a minha carteira?",
+      "tela": "carteira 1/4: 26 → 27 e as revendas em barras",
+      "acao": "carteira:carteira",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Na safra 26 você vendeu 16.900 sacos, e pra 27 já fechou 18.850 — 12% a mais. Quem mais puxou foi a Revenda Alfa, com 750 sacos a mais; só a Revenda Gama caiu, 250 sacos."
+    },
+    {
+      "n": 8,
+      "fala": "Quanto eu fechei para 27 e quanto foi cancelado?",
+      "tela": "carteira 2/4: fechado, cancelado e os motivos",
+      "acao": "carteira:cancelamento",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Pra 27 você fechou 18.850 sacos e perdeu 1.400 em cancelamento, uns 7% do que foi negociado. O que mais pesou foi crédito não aprovado: 600 sacos."
+    },
+    {
+      "n": 9,
+      "fala": "Qual a oportunidade se a prospecção se confirmar?",
+      "tela": "carteira 3/4: fechado + prospecção (BEST)",
+      "acao": "carteira:prospeccao",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Se a prospecção se confirmar, entram mais 4.300 sacos e a carteira vai a 23.150 — 37% acima da safra 26. A maior oportunidade está na Revenda Delta, com 1.300 sacos."
+    },
+    {
+      "n": 10,
+      "fala": "Me mostra o faturamento",
+      "tela": "carteira 4/4: pedido em sistema, faturado, a faturar, vendido, saldo",
+      "acao": "carteira:faturamento",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Da 27, você tem 20.300 sacos em pedido no sistema: 14.200 já faturados e 6.100 a faturar. Como vendeu 18.850, sobram 1.450 sacos ainda sem cliente."
+    },
+    {
+      "n": 11,
+      "fala": "Volta ao início",
+      "tela": "tudo fecha; volta a folha",
+      "acao": "tela:inicio",
+      "hib": null,
+      "geo": null,
+      "area": null,
+      "top": null,
+      "resposta": "Pronto, voltei à tela inicial."
+    }
+  ]
+}
