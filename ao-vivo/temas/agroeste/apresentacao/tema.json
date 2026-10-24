@@ -1,0 +1,23 @@
+{
+  "_leia": "Tema de APRESENTAÇÃO da Agroeste (08/out/2026, guia = Template Agroeste da Bayer, RESTRICTED — só para quem trabalha para a Agroeste; ver assets/marcas/agroeste/LEIA.txt). Só dado: azuis #005C9E/#0098D8/#264983 (fundo = o #264983 escurecido), verde #96E860/#74AF27, Inter (o motor só tem Inter 700: o Black do guia vira 700), logo empilhada branca na abertura e no selo, as ondas da logo como símbolo final, a assinatura Bayer como frase. Fundo 'ondas' = degradê azul + faixas curvas em CSS (nenhuma foto do template). Mudou? rode scripts/apresentacao/embutir.ts. NUNCA Oscarpes, Brevant, Corteva ou Pioneer.",
+  "id": "agroeste",
+  "nome": "Agroeste",
+  "marca": "agroeste",
+  "fundo": "ondas",
+  "cores": {
+    "fundo": "#152c52", "fundoA": "#005c9e", "fundoB": "#264983", "painel": "#1d3b6d", "destaque": "#0098d8",
+    "acento": "#96e860", "acento2": "#74af27", "alt": "#009ddc",
+    "texto": "#ffffff", "mudo": "#c3d6ea", "cinza": "#e6eef6", "creme": "#f2f8ff", "sobreAcento": "#152c52"
+  },
+  "fontes": { "titulo": "Inter", "pesoTitulo": 700, "caixaAltaTitulo": true, "espacoTitulo": ".01em", "numero": "Inter", "pesoNumero": 700, "corpo": "Inter" },
+  "frase": "Se é Milho, é Bayer. Se é Bayer, é bom.",
+  "marcaTexto": null,
+  "seloTexto": null,
+  "rodapeDono": null,
+  "particulas": ["#ffffff", "#0098d8", "#96e860", "#e6eef6", "#009ddc", "#74af27", "#ffffff"],
+  "ativos": {
+    "abertura": { "arquivo": "abertura.png", "largura": 520 },
+    "selo": { "arquivo": "selo.png" },
+    "simbolo": { "arquivo": "simbolo.png", "largura": 440 }
+  }
+}
