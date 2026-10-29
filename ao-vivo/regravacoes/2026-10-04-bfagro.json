@@ -1,0 +1,21 @@
+{
+  "id": "2026-10-04-bfagro",
+  "titulo": "Conversa de 04/10/2026, 11:07–11:11 (Cuiabá)",
+  "_leia": "Roteiro da regravação (js/regravar.js). O TEXTO das perguntas não mora aqui (o site é público): a página lê cada fala do log whatsapp_conversas pelo conversa_id, com a sessão do admin. intervalo_s = segundos desde a pergunta anterior no dia original. A 3ª pergunta é da 1ª tentativa (11:06) e entra depois do fósforo, como foi feita; o resto é a sequência limpa das 11:07. texto_demo: perguntas INVENTADAS, só para o ?demo em localhost.",
+  "origem": "whatsapp_conversas · admin · 04/10/2026 · 11:06–11:10 de Cuiabá · sem os 'tudo certo' e os [[SILENCIO]]",
+  "musica": false,
+  "apresentacao": true,
+  "pausa_inicial_s": 3,
+  "folga_minima_s": 1.5,
+  "cauda_s": 4,
+  "perguntas": [
+    { "ordem": 1, "conversa_id": "75713cd3-f3e2-4adf-8480-363f349cc561", "hora_original": "11:07:21", "intervalo_s": 0,    "texto_demo": "me traz tudo que você tem do grupo Exemplo" },
+    { "ordem": 2, "conversa_id": "26a1bb3e-851f-4f29-b4a6-11c415dc4498", "hora_original": "11:07:46", "intervalo_s": 25.1, "texto_demo": "me traz a evolução de fósforo da Fazenda Exemplo nos anos" },
+    { "ordem": 3, "conversa_id": "60201ea1-9288-45d7-aaed-798a66f2f5e0", "hora_original": "11:06:27", "intervalo_s": 42.0, "texto_demo": "esse nível de fósforo é adequado" },
+    { "ordem": 4, "conversa_id": "b5b40b1a-827c-4ac2-b2bc-27d81f06445a", "hora_original": "11:08:32", "intervalo_s": 46.1, "texto_demo": "anota que o fósforo subiu pela calagem e me traz o potássio nos anos" },
+    { "ordem": 5, "conversa_id": "67f5bc97-7fe2-444f-86b3-a03eaa470a55", "hora_original": "11:09:08", "intervalo_s": 35.8, "texto_demo": "anota que reduzimos o potássio, esse nível continua adequado no mapa" },
+    { "ordem": 6, "conversa_id": "8082c1a1-ef5c-4ef8-b332-80e2f2517ef1", "hora_original": "11:09:46", "intervalo_s": 37.3, "texto_demo": "qual a previsão da semana que vem comparada com a média histórica" },
+    { "ordem": 7, "conversa_id": "789c9217-cb11-4e18-a849-8bc423516f1f", "hora_original": "11:10:17", "intervalo_s": 31.1, "texto_demo": "segundo o histórico de chuva, qual a melhor data de plantio" },
+    { "ordem": 8, "conversa_id": "d1d02725-06e3-4270-a15c-108c24217e75", "hora_original": "11:10:51", "intervalo_s": 34.6, "texto_demo": "Obrigado pode encerrar" }
+  ]
+}

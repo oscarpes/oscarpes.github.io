@@ -1,0 +1,17 @@
+{
+  "id": "/ao-vivo/?tema=demo-milho",
+  "name": "Oscarpes · Demonstração",
+  "short_name": "Oscarpes Demo",
+  "description": "Demonstração do Jarvis com dados fictícios de milho: carteira e resultados no mapa.",
+  "start_url": "/ao-vivo/?tema=demo-milho",
+  "scope": "/ao-vivo/",
+  "display": "standalone",
+  "launch_handler": { "client_mode": ["focus-existing", "auto"] },
+  "background_color": "#0b1102",
+  "theme_color": "#0b1102",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icone-ouro-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-ouro-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
