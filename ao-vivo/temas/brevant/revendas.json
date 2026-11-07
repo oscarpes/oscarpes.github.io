@@ -1,0 +1,18 @@
+{
+  "_comentario": "Mapa logo → arquivo das revendas da tela ao vivo (04/out/2026). A chave é o campo `logo` do índice da carteira (org_carteira_dados.logo); as duas filiais da Mocellin usam 'mocellin'. Arquivo ausente: a tela mostra só o nome em vidro. Os arquivos moram em /ao-vivo/revendas/.",
+  "pasta": "/ao-vivo/revendas/",
+  "logos": {
+    "mocellin": ["mocellin.svg", "mocellin.png"],
+    "defender": ["defender.svg", "defender.png"],
+    "paiol": ["paiol.svg", "paiol.png"],
+    "plantun": ["paiol.svg", "paiol.png", "plantun.svg", "plantun.png"],
+    "agro-amazonia": ["agro-amazonia.svg", "agro-amazonia.png"],
+    "amaggi": ["amaggi.svg", "amaggi.png"],
+    "c-vale": ["c-vale.svg", "c-vale.png"],
+    "crop-insumos": ["crop-insumos.svg", "crop-insumos.png"],
+    "coacen": ["coacen.svg", "coacen.png"],
+    "coanorte": ["coanorte.svg", "coanorte.png"],
+    "novo-agro": ["novo-agro.svg", "novo-agro.png"],
+    "profarm": ["profarm.svg", "profarm.png"]
+  }
+}

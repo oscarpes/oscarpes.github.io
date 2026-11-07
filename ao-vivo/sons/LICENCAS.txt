@@ -1,0 +1,7 @@
+Sons da tela ao vivo (public/ao-vivo/sons/) — licenças.
+
+Palmas — Pixabay, baixadas em 04/out/2026 a pedido do João ("Jarvis, palmas"); recomprimidas para mp3 96 kbps.
+Licença: Pixabay Content License — uso gratuito, inclusive comercial, sem atribuição obrigatória.
+- palmas.mp3        ← driken5482-applause-cheer-236786.mp3 (8 s, palmas + vibração) — https://pixabay.com/sound-effects/people-applause-cheer-236786/
+- palmas-fortes.mp3 ← soundeffectgallery99-loud-applause-sound-effect-422740.mp3 (11 s, palmas fortes) — https://pixabay.com/sound-effects/people-loud-applause-sound-effect-422740/
+- palmas-festa.mp3  ← freesound_community-audience-applause-with-cheering-100682.mp3 (12 s, plateia com gritos) — https://pixabay.com/sound-effects/people-audience-applause-with-cheering-100682/
