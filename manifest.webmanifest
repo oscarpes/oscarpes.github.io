@@ -1,0 +1,16 @@
+{
+  "name": "Oscarpes",
+  "short_name": "Oscarpes",
+  "description": "Oscarpes — agricultura inteligente.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f3eedc",
+  "theme_color": "#0b1102",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/icone-app-creme-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-app-creme-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

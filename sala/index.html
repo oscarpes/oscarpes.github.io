@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b1203">
+<title>Sala de comando</title>
+<!-- SALA DE COMANDO NO CELULAR (21/out/2026, João: "segue com a B").
+     O mod escritorio-oscarpes, no Mac, mede a casa a cada minuto (sem token de modelo) e grava UMA linha na
+     tabela sala_comando. Esta página lê essa linha com o LOGIN DO APP (a sessão que o app web guarda neste
+     mesmo endereço) — a RLS só deixa o suporte global (is_admin()) ler. Nada de segredo aqui: a chave anon
+     é pública e entra no deploy (scripts/deploy-web.sh troca o marcador).
+     Duas vistas: "Hoje" (lista do que precisa do João, para o dia a dia no celular) e "Sala 3D" (3d.html =
+     cópia de ~/.claude/mods/escritorio-oscarpes/ativos/sala3d.html, que lê os dados desta página pelo parent;
+     scripts/conferir-sala.cjs confere a cópia). -->
+<style>
+:root{--fundo:#0b1203;--cartao:#141f07;--borda:#2a3a10;--texto:#f1ecd6;--mudo:#a7a58a;--acento:#f9a322;--urgente:#e5533d;--atencao:#f9a322;--ok:#8fb33a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fundo);color:var(--texto);font:400 16px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(11,18,3,.94);border-bottom:1px solid var(--borda);backdrop-filter:blur(6px)}
+header img{width:28px;height:28px}
+header h1{font-size:15px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#idade{font-size:12px;color:var(--mudo);text-align:right}
+#idade.velho{color:var(--urgente);font-weight:600}
+nav{display:flex;gap:6px}
+nav button{background:transparent;color:var(--mudo);border:1px solid var(--borda);border-radius:999px;padding:6px 12px;font:600 13px system-ui;cursor:pointer}
+nav button[aria-pressed=true]{background:var(--acento);border-color:var(--acento);color:#1b2704}
+main{padding:12px 16px 40px;max-width:720px;margin:0 auto}
+#msg{padding:40px 16px;text-align:center;color:var(--mudo)}
+#msg a{color:var(--acento);font-weight:600}
+.voce{display:flex;align-items:baseline;gap:10px;background:var(--cartao);border:1px solid var(--borda);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.voce b{font-size:34px;color:var(--acento);line-height:1}
+.voce span{color:var(--mudo)}
+h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mudo);margin:18px 0 8px}
+.item{display:flex;gap:10px;align-items:flex-start;background:var(--cartao);border:1px solid var(--borda);border-left:4px solid var(--ok);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.item.urgente{border-left-color:var(--urgente)}
+.item.atencao{border-left-color:var(--atencao)}
+.item .nome{font-weight:600}
+.item .time{font-size:12px;color:var(--mudo)}
+.item .agora{font-size:14px;margin-top:2px}
+.item .fila{margin-left:auto;font:700 15px system-ui;color:var(--acento);white-space:nowrap}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--mudo);padding:8px 0}
+.tanques{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tanque{background:var(--cartao);border:1px solid var(--borda);border-radius:10px;padding:10px 12px}
+.tanque .barra{height:8px;border-radius:4px;background:#26330d;margin:6px 0 4px;overflow:hidden}
+.tanque .barra i{display:block;height:100%;background:var(--ok)}
+.tanque small{color:var(--mudo)}
+#tres{position:fixed;inset:0;top:var(--topo,52px);width:100%;height:calc(100% - var(--topo,52px));border:0;display:none;background:var(--fundo)}
+body.ver3d #tres{display:block}
+body.ver3d main{display:none}
+</style></head>
+<body>
+<header><img src="folha.png" alt=""><h1>Sala de comando</h1><div id="idade"></div>
+<nav><button id="bHoje" aria-pressed="true">Hoje</button><button id="b3d" aria-pressed="false">Sala 3D</button></nav></header>
+<main><div id="msg">Abrindo…</div><div id="hoje" hidden></div></main>
+<iframe id="tres" title="Sala 3D" allow="fullscreen"></iframe>
+<script>
+'use strict';
+const URL_SB = 'https://sjtfwipgqeryeukreyst.supabase.co'
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqdGZ3aXBncWVyeWV1a3JleXN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNTI1MTksImV4cCI6MjA5MjcyODUxOX0.DG0pLGoPbo8W50_AeXb1zA0BALCchyKPAGFfP3hghcM'
+const CHAVE = 'sb-sjtfwipgqeryeukreyst-auth-token'
+const $ = id => document.getElementById(id)
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e }
+const avisar = html => { $('msg').hidden = false; $('msg').innerHTML = html; $('hoje').hidden = true }
+
+// ---- sessão do app (a mesma que o app web guarda aqui; sessionStorage quando "permanecer conectado" está desmarcado)
+function lerSessao() {
+  for (const s of [sessionStorage, localStorage]) {
+    try {
+      const v = s.getItem(CHAVE)
+      if (!v) continue
+      const j = JSON.parse(v)
+      const sess = j.currentSession || j
+      if (sess && sess.access_token) return { s, sess, embrulho: j.currentSession ? j : null }
+    } catch (e) {}
+  }
+  return null
+}
+async function token() {
+  const lida = lerSessao()
+  if (!lida) return null
+  const { s, sess, embrulho } = lida
+  if ((sess.expires_at || 0) * 1000 > Date.now() + 60000) return sess.access_token
+  // venceu: renova e grava de volta no mesmo lugar (o refresh token gira; se não gravar, o app perde a sessão)
+  const r = await fetch(URL_SB + '/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: sess.refresh_token }),
+  })
+  if (!r.ok) return null
+  const nova = await r.json()
+  if (!nova.expires_at) nova.expires_at = Math.floor(Date.now() / 1000) + (nova.expires_in || 3600)
+  try { s.setItem(CHAVE, JSON.stringify(embrulho ? { ...embrulho, currentSession: nova, expiresAt: nova.expires_at } : nova)) } catch (e) {}
+  return nova.access_token
+}
+
+// ---- dados
+let medido = null, linha = null
+async function buscar() {
+  const t = await token()
+  if (!t) { avisar('Entre no app neste navegador e volte aqui.<br><br><a href="/">Entrar no app</a>'); return }
+  const r = await fetch(URL_SB + '/rest/v1/sala_comando?id=eq.principal&select=dados,medido_em', { headers: { apikey: ANON, Authorization: 'Bearer ' + t } })
+  if (!r.ok) { avisar('Não consegui ler a sala agora (' + r.status + '). Tento de novo em 1 minuto.'); return }
+  const l = (await r.json())[0]
+  if (!l) { avisar('Esta sala é só do suporte da Oscarpes.'); return }
+  linha = l
+  idade()
+  if (l.medido_em === medido) return
+  medido = l.medido_em
+  window.__SALA = l.dados
+  window.__FOLHA = 'folha.png'
+  desenhar(l.dados)
+  sala3dVelha = true
+  if (document.body.classList.contains('ver3d')) abrir3d()
+}
+function idade() {
+  if (!linha) return
+  const min = Math.floor((Date.now() - new Date(linha.medido_em).getTime()) / 60000)
+  $('idade').textContent = min < 1 ? 'agora' : 'há ' + min + ' min'
+  // o Mac mede a cada minuto; mais de 3 min sem medida = Mac dormindo ou sem sessão do Claude aberta
+  $('idade').className = min > 3 ? 'velho' : ''
+  $('idade').title = min > 3 ? 'O Mac parou de medir (dormindo ou sem o Claude aberto)' : ''
+}
+
+// ---- vista "Hoje": o que precisa do João primeiro
+function grau(a) {
+  if (a.falhou || a.alerta === 'urgente') return 'urgente'
+  if (a.alerta || (a.fila > 0 && a.situacao === 'no ar')) return 'atencao'
+  return 'ok'
+}
+function desenhar(D) {
+  const times = D.times || {}
+  const vivos = D.agentes.filter(a => !a.joao && !a.fantasma && a.situacao !== 'na fila')
+  const joao = D.agentes.find(a => a.joao)
+  const caixa = $('hoje'); caixa.textContent = ''
+  const v = el('div', 'voce'); v.append(el('b', null, joao && joao.fila != null ? joao.fila : '—'), el('span', null, 'para você resolver'))
+  caixa.append(v)
+  const item = a => {
+    const d = el('div', 'item ' + grau(a))
+    const c = el('div')
+    c.append(el('div', 'nome', a.nome), el('div', 'time', (times[a.time] || {}).nome || a.time))
+    const ag = a.falhou ? 'última ronda saiu com erro' : (a.agora || a.legenda || '')
+    if (ag) c.append(el('div', 'agora', ag))
+    d.append(c)
+    if (a.fila > 0) d.append(el('div', 'fila', a.fila))
+    return d
+  }
+  const ordem = (x, y) => (y.fila || 0) - (x.fila || 0)
+  const grupos = [['urgente', 'Urgente'], ['atencao', 'Com fila'], ['ok', 'Em dia']]
+  for (const [g, titulo] of grupos) {
+    const lista = vivos.filter(a => grau(a) === g).sort(ordem)
+    if (!lista.length) continue
+    if (g === 'ok') {
+      const det = el('details'); det.append(el('summary', null, titulo + ' (' + lista.length + ')'), ...lista.map(item)); caixa.append(det)
+    } else { caixa.append(el('h2', null, titulo + ' (' + lista.length + ')'), ...lista.map(item)) }
+  }
+  if (D.cota) {
+    caixa.append(el('h2', null, 'Cota das IAs'))
+    const tq = el('div', 'tanques')
+    for (const [k, nome] of [['claude', 'Claude'], ['codex', 'Codex']]) {
+      const c = D.cota[k]; if (!c) continue
+      const t = el('div', 'tanque'); t.append(el('div', 'nome', nome + ' · ' + (c.livre_pct ?? '—') + '% livre'))
+      const b = el('div', 'barra'), i = el('i'); i.style.width = Math.max(0, Math.min(100, c.livre_pct || 0)) + '%'
+      if ((c.livre_pct || 0) < 20) i.style.background = 'var(--urgente)'
+      b.append(i); t.append(b)
+      if (c.renova_em) t.append(el('small', null, 'renova ' + new Date(c.renova_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })))
+      tq.append(t)
+    }
+    caixa.append(tq)
+  }
+  const fila = D.agentes.filter(a => a.fantasma || a.situacao === 'na fila')
+  if (fila.length) {
+    const det = el('details'); det.append(el('summary', null, 'Ainda não existem (' + fila.length + ')'))
+    for (const a of fila) { const d = el('div', 'item'); d.append(el('div', 'nome', a.nome + (a.cobre ? ' — hoje: ' + a.cobre : ''))); det.append(d) }
+    caixa.append(det)
+  }
+  if (D.avisos && D.avisos.length) caixa.append(el('h2', null, 'Medida incompleta: ' + D.avisos.join(', ')))
+  $('msg').hidden = true; caixa.hidden = false
+}
+
+// ---- vista "Sala 3D": a mesma página do Mac, lendo os dados daqui
+let sala3dVelha = true
+function abrir3d() {
+  document.documentElement.style.setProperty('--topo', document.querySelector('header').offsetHeight + 'px')
+  if (sala3dVelha && window.__SALA) { $('tres').src = '3d.html?' + Date.parse(medido); sala3dVelha = false }
+}
+function vista(tres) {
+  document.body.classList.toggle('ver3d', tres)
+  $('bHoje').setAttribute('aria-pressed', String(!tres)); $('b3d').setAttribute('aria-pressed', String(tres))
+  try { localStorage.setItem('oscarpes:sala_vista', tres ? '3d' : 'hoje') } catch (e) {}
+  if (tres) abrir3d()
+}
+$('bHoje').onclick = () => vista(false)
+$('b3d').onclick = () => vista(true)
+
+buscar().then(() => { let v = null; try { v = localStorage.getItem('oscarpes:sala_vista') } catch (e) {} if (v === '3d') vista(true) })
+setInterval(buscar, 60000)
+setInterval(idade, 15000)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) buscar() })
+</script>
+</body>
+</html>

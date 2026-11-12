@@ -1,0 +1,33 @@
+/* TEMA AGROESTE (08/out/2026) — guia: Template Agroeste (Bayer, interno/RESTRICTED; ver
+   assets/marcas/agroeste/LEIA.txt). Fica FORA do site (não está em scripts/temas-publicos.txt).
+   - Azul principal #005C9E e #0098D8; apoio #009DDC / #264983; verde #96E860 (destaque) e #74AF27.
+   - Fonte Inter (Google Fonts, grátis), Inter Black (900) nos títulos.
+   - Fundo: o degradê azul do template com DUAS faixas curvas (azul e verde), só CSS — nenhuma foto
+     do template (as fotos de banco dele não saem do PowerPoint).
+   - Logo sobre azul: a versão BRANCA inteira (empilhada: ondas + nome); as ondas da logo viram as bolinhas. */
+html.tema-agroeste, html.tema-agroeste body{background-color:#11264a}
+html.tema-agroeste body{background:
+  radial-gradient(1500px 620px at 92% 118%,transparent 61%,rgba(0,152,216,.32) 61.6%,rgba(0,152,216,.32) 63.4%,transparent 64%),
+  radial-gradient(1500px 620px at 96% 128%,transparent 61%,rgba(150,232,96,.26) 61.6%,rgba(150,232,96,.26) 63%,transparent 63.6%),
+  radial-gradient(1000px 700px at 50% 40%,rgba(0,152,216,.30),transparent 70%),
+  linear-gradient(115deg,#152c52 0%,#264983 45%,#005c9e 100%)}
+html.tema-agroeste .topo{font-family:"Inter",Menlo,monospace;font-weight:600}
+html.tema-agroeste .marca .logo-tema{height:clamp(34px,2.8vw,58px);width:auto}
+html.tema-agroeste body.com-paineis .marca .logo-tema{height:clamp(30px,2.2vw,46px)}
+html.tema-agroeste #abertura{background:radial-gradient(circle at 50% 45%,rgba(0,92,158,.92),rgba(17,38,74,.98))}
+html.tema-agroeste #abertura .caixa{max-width:660px}
+html.tema-agroeste #abertura .logo-tema{display:block;margin:0 auto 30px;height:clamp(80px,9vw,128px);width:auto}
+html.tema-agroeste #abertura h1{font:900 clamp(24px,2.9vw,40px)/1.2 "Inter",sans-serif;letter-spacing:-.01em;margin:0 auto 22px;max-width:10.6em;color:#fff}
+html.tema-agroeste #abertura p{color:#d9e6f3;font-size:1.02rem}
+html.tema-agroeste h2, html.tema-agroeste .painel h3{font-family:"Inter",sans-serif;font-weight:900}
+@media (max-width:759px){
+  html.tema-agroeste .marca .logo-tema{height:30px}
+  html.tema-agroeste #abertura h1{font-size:26px}
+}
+/* a porta de login (acesso.js, 09/out/2026) */
+html.tema-agroeste .ag-login{display:flex;flex-direction:column;gap:10px;align-items:stretch;width:min(360px,86vw);margin:18px auto 6px}
+html.tema-agroeste .ag-login-tit{font:700 .95rem "Inter",sans-serif;color:#fff;margin:0 0 2px}
+html.tema-agroeste .ag-login input{font:500 1rem "Inter",sans-serif;padding:12px 14px;border-radius:10px;border:1px solid rgba(150,232,96,.5);background:rgba(17,38,74,.6);color:#fff}
+html.tema-agroeste .ag-login button{font:900 1.05rem "Inter",sans-serif;letter-spacing:.06em;padding:12px;border:0;border-radius:999px;background:#96e860;color:#152c52;cursor:pointer}
+html.tema-agroeste .ag-login button:disabled{opacity:.6}
+html.tema-agroeste .ag-login-msg{color:#d9e6f3;font-size:.8rem;min-height:1em}

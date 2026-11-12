@@ -1,0 +1,42 @@
+{
+  "_leia": "Tema PADRÃO (Oscarpes). Espelho de TEMA_PADRAO em public/ao-vivo/index.html — a página NÃO lê este arquivo (o padrão mora no código, sem esperar rede); ele é o MODELO para uma empresa nova e o portão conferir-ao-vivo-voz.ts confere que os dois são iguais. Ver docs/ao-vivo/TEMAS.md.",
+  "id": "oscarpes",
+  "nome": "Oscarpes",
+  "titulo": "Oscarpes ao vivo",
+  "corDaBarra": "#0b1102",
+  "manifesto": "manifest.webmanifest",
+  "icone": "icone-ouro-192.png",
+  "iconeInicio": "folha.png",
+  "chamada": {
+    "extras": [],
+    "dizer": "Oscar"
+  },
+  "saudacao": {
+    "ios": "Olá. Estou ouvindo. Pode perguntar.",
+    "outros": "Olá. Estou ouvindo. Pode perguntar; depois, é só me chamar de Oscar."
+  },
+  "musica": true,
+  "fundo": "raizes",
+  "particulas": {
+    "imagem": "folha.png",
+    "acento": null,
+    "ouroAleatorio": 0.14,
+    "larguraMax": null,
+    "espera": "#c4ca3c",
+    "ouvindo": "#e1d49b",
+    "falando": "#f9b84a",
+    "ouro": "#f9b84a",
+    "halo": "#a2a72a",
+    "anel": "#f9a322",
+    "nucleo": [
+      1,
+      1,
+      0.94
+    ]
+  },
+  "marca": null,
+  "abertura": null,
+  "trocaDeCores": {},
+  "trocaDeTexto": [],
+  "fonteGoogle": null
+}

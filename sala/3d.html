@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sala de comando Oscarpes</title>
+<!--
+  Sala de comando Oscarpes em 3D (João, 21/out/2026: "tire as salas quadradas,
+  modernize; o agente que recebe pelo zap é o ponto central").
+  - No centro, a Recepção do zap, num núcleo; em volta dela, o anel do balcão
+    (as 8 mesas, o conferente e as vigias do zap).
+  - Em volta, uma ilha redonda por time, ligada ao núcleo por passarela.
+  - Os caminhos do trabalho são trilhos de luz que passam pelo lugar de cada
+    agente, na ordem. Clique num caminho para destacar; "Tour" passa por todos.
+  - Barra de vida em cima de cada um: cheia = pronto; laranja piscando = erro.
+  Os dados vêm de dados.js (window.__SALA), que o mod regrava a cada minuto;
+  a página relê sozinha. three.js 0.160 vem junto (tres.js), sem internet.
+-->
+<style>
+  :root { --verde: #1B2704; --bege: #E1D49B; --creme: #F4EFE1; --apagado: #BCC4AC; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(ellipse at 55% 45%, #2A3A10 0%, #141D06 45%, #070A02 100%); font-family: Inter, -apple-system, 'Segoe UI', sans-serif; color: var(--creme); }
+  #cena { position: fixed; inset: 0; }
+  .painel { position: fixed; background: rgba(14, 20, 6, .94); backdrop-filter: blur(8px); border: 1px solid rgba(225, 212, 155, .16); border-radius: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, .35); }
+  #titulo { left: 20px; top: 18px; padding: 14px 20px; display: flex; gap: 14px; align-items: center; }
+  #titulo img { width: 34px; }
+  #titulo h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.2px; color: #fff; }
+  #titulo p { margin: 3px 0 0; font-size: 12px; color: var(--apagado); }
+  #linhas { left: 20px; top: 108px; width: 252px; padding: 10px; max-height: calc(100vh - 136px); overflow: auto; }
+  #linhas .cab { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px 8px; font-size: 10.5px; color: var(--apagado); font-weight: 700; text-transform: uppercase; letter-spacing: .8px; }
+  #tour { border: 0; background: #F9A322; color: #1B2704; font: 800 12px Inter, sans-serif; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+  .linha { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 9px 8px; border-radius: 12px; cursor: pointer; transition: background .2s; }
+  .linha:hover { background: rgba(255, 255, 255, .05); }
+  .linha.ativa { background: rgba(255, 255, 255, .09); box-shadow: inset 3px 0 0 var(--cor); }
+  .linha .num { width: 26px; height: 26px; border-radius: 50%; background: var(--cor); color: #fff; font-weight: 800; font-size: 13px; display: grid; place-items: center; box-shadow: none; }
+  .linha b { font-size: 13.5px; display: block; color: #fff; }
+  .linha span { font-size: 11px; color: var(--apagado); display: block; margin-top: 1px; }
+  .linha i { font-style: normal; font-size: 10.5px; font-weight: 700; display: block; margin-top: 3px; }
+  .ok { color: #9BEA7E; } .buraco { color: #F9A322; }
+  #passos { left: 50%; transform: translateX(-50%); bottom: 20px; padding: 11px 16px; display: none; gap: 7px; align-items: center; flex-wrap: wrap; max-width: 72vw; }
+  #passos .p { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #fff; }
+  #passos .p em { font-style: normal; width: 21px; height: 21px; border-radius: 50%; background: var(--cor); color: #fff; display: grid; place-items: center; font-size: 11px; box-shadow: 0 0 10px var(--cor); }
+  #passos .seta { color: var(--apagado); }
+  #passos .portao { font-size: 10px; background: #F9A322; color: #1B2704; padding: 2px 8px; border-radius: 999px; margin-left: 2px; font-weight: 800; }
+  #direita { right: 22px; top: 20px; padding: 12px 16px; display: flex; gap: 18px; align-items: center; }
+  .tanque { display: flex; gap: 9px; align-items: center; }
+  .tanque .t { width: 18px; height: 40px; border-radius: 5px; background: #0B1004; position: relative; overflow: hidden; border: 1px solid rgba(225, 212, 155, .3); }
+  .tanque .t div { position: absolute; left: 2px; right: 2px; bottom: 2px; border-radius: 2px; box-shadow: 0 0 8px currentColor; }
+  .tanque b { font-size: 12px; display: block; color: #fff; } .tanque span { font-size: 11px; color: #9BEA7E; font-weight: 700; } .tanque small { display: block; font-size: 10px; color: var(--apagado); }
+  #atencao { left: 304px; right: 20px; top: auto; bottom: 20px; padding: 9px 12px; display: none; gap: 8px; align-items: center; max-width: none; flex-wrap: wrap; }
+  #atencao b { font-size: 11px; color: #F9A322; letter-spacing: .6px; text-transform: uppercase; margin-right: 2px; }
+  #atencao .it { cursor: pointer; font-size: 12px; font-weight: 700; color: #fff; background: rgba(242, 140, 28, .18); border: 1px solid rgba(242, 140, 28, .55); padding: 4px 10px; border-radius: 999px; }
+  #atencao .it small { font-weight: 600; color: #FFC77A; margin-left: 4px; }
+  #ficha { right: 20px; top: 108px; z-index: 6; width: 290px; padding: 15px 17px; display: none; }
+  #ficha h3 { margin: 0 0 2px; font-size: 16.5px; color: #fff; } #ficha .time { font-size: 11px; font-weight: 800; letter-spacing: .4px; }
+  #ficha p { font-size: 12.5px; margin: 9px 0 0; line-height: 1.45; }
+  #ficha .fechar { position: absolute; right: 12px; top: 10px; cursor: pointer; color: var(--apagado); font-size: 16px; }
+  /* rótulos presos à cena */
+  .rot { pointer-events: auto; cursor: pointer; text-align: center; transition: opacity .3s; }
+  .rot .n { display: inline-block; font: 700 12px Inter, sans-serif; color: #fff; background: rgba(10, 14, 4, .78); padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+  .vida { display: flex; gap: 1px; padding: 2px; margin: 3px auto 2px; width: 62px; height: 7px; background: #0B1004; border: 1px solid #000; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
+  .vida div { flex: 1; background: #2C3622; border-radius: 1px; }
+  .vida div.c { background: linear-gradient(#B8F59A 0 30%, #3DBB3D 30%); box-shadow: none; }
+  .vida.erro div.c { background: linear-gradient(#FFD9A0 0 30%, #F28C1C 30%); box-shadow: none; animation: pisca 1.2s infinite; }
+  .vida.fantasma { background: transparent; border: 1px dashed #8A8F7A; box-shadow: none; } .vida.fantasma div { background: transparent; }
+  .rot .l { display: inline-block; font: 600 11px Inter, sans-serif; color: #B8F59A; white-space: nowrap; background: rgba(10, 14, 4, .7); padding: 1px 6px; border-radius: 999px; }
+  .rot .l.erro { color: #FFC77A; } .rot .l.cinza { color: #A9B096; }
+  .rot.apagado { opacity: 0; pointer-events: none; }
+  .rot.compacto .n, .rot.compacto .l { display: none; }
+  .rot.compacto .vida { width: 38px; height: 5px; }
+  .rot.compacto.fantasma { display: none; }
+  .rot.compacto:is(:hover, :focus-visible) .n, .rot.compacto:is(:hover, :focus-visible) .l { display: inline-block; }
+  .rot.compacto:is(:hover, :focus-visible) .vida { width: 62px; height: 7px; }
+  .rot.centro .n { font-size: 13px; padding: 4px 11px; background: #F9A322; color: #1B2704; }
+  .num3d { font: 800 11px Inter, sans-serif; color: #fff; width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 12px rgba(255, 255, 255, .6); }
+  .placa { display: flex; align-items: center; gap: 7px; padding: 6px 13px 6px 9px; border-radius: 999px; font: 800 13px Inter, sans-serif; box-shadow: 0 6px 20px rgba(0, 0, 0, .4); white-space: nowrap; }
+  .placa img { width: 14px; }
+  .placa small { font-weight: 600; font-size: 10.5px; opacity: .8; }
+  .nivel { font: 800 11px Inter, sans-serif; color: #B8F59A; letter-spacing: 1px; text-transform: uppercase; background: rgba(10,14,4,.6); padding: 3px 10px; border-radius: 999px; border: 1px solid rgba(184,245,154,.35); }
+  @keyframes pisca { 50% { opacity: .35 } }
+  /* celular (21/out/2026): a lista "Hoje" da página de fora já mostra o resumo, os tanques e quem precisa de
+     atenção; aqui fica a cena, os caminhos numa faixa embaixo e a ficha por cima dela */
+  @media (max-width: 760px) {
+    #titulo, #direita, #legenda, #atencao { display: none !important; }
+    #linhas { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 30vh; }
+    #ficha { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; z-index: 3; max-height: 60vh; overflow: auto; }
+    #passos { top: 8px; bottom: auto; max-width: 94vw; }
+  }
+  #legenda { left: 20px; bottom: 20px; padding: 10px 14px; font-size: 10.5px; color: var(--apagado); display: grid; grid-template-columns: repeat(2, auto); gap: 7px 12px; }
+  #legenda span { display: flex; gap: 6px; align-items: center; } #legenda em { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+  .painel { z-index: 4; }
+  button { font: inherit; color: inherit; }
+  button.linha { width: 100%; border: 0; background: transparent; text-align: left; }
+  button.linha:hover, button.linha.ativa { background: rgba(225, 212, 155, .1); }
+  :focus-visible { outline: 2px solid #E1D49B; outline-offset: 4px; }
+  ::selection { background: #E1D49B; color: #1B2704; }
+  * { scrollbar-width: thin; scrollbar-color: #6E8051 #101706; }
+  #linhas { max-height: calc(100vh - 256px); }
+  #legenda { width: 244px; }
+  #atencao { max-height: 76px; overflow: auto; }
+  #atencao .it { font: inherit; font-size: 12px; }
+  #passos { left: 304px; right: 230px; top: 108px; bottom: auto; transform: none; max-width: none; }
+  #ficha .fechar { border: 0; background: transparent; width: 40px; height: 40px; top: 2px; right: 4px; }
+  #ficha h3 { padding-right: 24px; }
+  .placa { border-radius: 8px; padding: 7px 11px; gap: 5px; flex-wrap: wrap; max-width: 156px; justify-content: center; white-space: normal; text-align: center; line-height: 1.2; }
+  .placa small { display: block; flex-basis: 100%; opacity: 1; font-size: 11px; }
+  .nivel { font-size: 11px; letter-spacing: .4px; background: #18240b; border-color: #5B713B; }
+  #vista { position: fixed; right: 20px; top: 108px; z-index: 5; display: flex; gap: 4px; padding: 5px; }
+  #vista button { min-width: 40px; min-height: 40px; border: 0; border-radius: 7px; background: transparent; cursor: pointer; }
+  #vista button:hover { background: #2A3818; }
+  @media (max-width: 1100px) and (min-width: 761px) {
+    #titulo { max-width: calc(100vw - 360px); }
+    #titulo h1 { font-size: 17px; }
+    #titulo p { max-width: 40ch; line-height: 1.4; }
+  }
+  @media (max-width: 760px) {
+    #linhas { max-height: 150px; padding: 8px; }
+    #lista { display: flex; gap: 4px; overflow-x: auto; scroll-snap-type: x proximity; }
+    button.linha { min-width: 202px; width: 202px; flex: none; scroll-snap-align: start; }
+    #passos { left: 8px; right: 8px; top: 8px; max-height: 24vh; overflow: auto; }
+    #vista { top: auto; right: 8px; bottom: 174px; }
+    #ficha { z-index: 7; }
+    .placa { max-width: 48px; font-size: 9px; padding: 4px; gap: 2px; }
+    .placa img { display: none; }
+    .placa small { font-size: 8px; }
+    .nivel { font-size: 8px; padding: 3px 4px; letter-spacing: 0; }
+  }
+  /* No panorama, o mapa mostra áreas. Pessoas e medidas aparecem ao aproximar. */
+  body.panorama .rot { visibility: hidden; pointer-events: none; }
+  body.panorama .rot:focus-visible { visibility: visible; }
+  body.panorama .placa small { display: none; }
+  @media (max-width: 760px) {
+    .placa { max-width: 68px; font-size: 11px; padding: 5px; }
+    .placa.time-placa { width: 62px; max-width: 62px; font-size: 11px; padding: 4px; margin-top: -40px; }
+    .time-placa:is([data-time="oficina"], [data-time="estudio"]) { margin-top: 40px; }
+    body.panorama .nivel { display: none; }
+    .placa small { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+<script src="tres.js"></script>
+</head>
+<body>
+<div id="cena" aria-label="Mapa tridimensional dos agentes"></div>
+<div id="vista" class="painel" aria-label="Controles da vista"><button id="afastar" aria-label="Afastar">−</button><button id="aproximar" aria-label="Aproximar">+</button><button id="voltar">Vista geral</button></div>
+<div id="titulo" class="painel"><img id="logo" alt=""><div><h1>Sala de comando Oscarpes</h1><p id="resumo">carregando…</p></div></div>
+<div id="linhas" class="painel"><div class="cab"><span>Caminhos do trabalho</span><button id="tour">▶ Tour</button></div><div id="lista"></div></div>
+<div id="direita" class="painel"></div>
+<div id="atencao" class="painel"></div>
+<div id="ficha" class="painel"></div>
+<div id="passos" class="painel"></div>
+<div id="legenda" class="painel"></div>
+<script src="dados.js"></script>
+<script>
+// three.js 0.160 num arquivo só (tres.js, feito por `deno bundle` de tres-entrada.js):
+// assim a página abre direto do arquivo, sem servidor e sem internet.
+const { OrbitControls, CSS2DRenderer, CSS2DObject, EffectComposer, RenderPass, UnrealBloomPass, OutputPass } = window.TRES
+
+// no Mac os dados vêm do dados.js; no celular (app.oscarpes.com.br/sala/) a
+// página de fora busca no Supabase e abre esta aqui dentro, com os dados nela
+const embutida = window.parent !== window
+const D = window.__SALA || (embutida && window.parent.__SALA)
+const FOLHA = window.__FOLHA || (embutida && window.parent.__FOLHA)
+document.getElementById('logo').src = FOLHA
+const hora = t => { if (!t) return '—'; const d = new Date(t); return d.toTimeString().slice(0, 5) }
+const CHAPEU = { comando: 'bone', zap: 'fone', oficina: 'capacete', cofre: 'gravata', estudio: 'boina', campo: 'agronomo' }
+const q = new URLSearchParams(location.search)
+const movimentoReduzido = matchMedia('(prefers-reduced-motion: reduce)')
+// Padrão = modelo E (João, 22/out/2026: a versão escolhida, da esquerda para a direita)
+if (!q.get('modelo')) q.set('modelo', 'e')
+
+// ---------- palco ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true })
+renderer.setPixelRatio(Math.min(2, devicePixelRatio))
+renderer.setSize(innerWidth, innerHeight)
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 0.95
+document.getElementById('cena').appendChild(renderer.domElement)
+const rotulos = new CSS2DRenderer()
+rotulos.setSize(innerWidth, innerHeight)
+Object.assign(rotulos.domElement.style, { position: 'fixed', inset: 0, pointerEvents: 'none' })
+document.body.appendChild(rotulos.domElement)
+
+const scene = new THREE.Scene()
+// fundo: degradê verde-escuro da marca (o composer não deixa ver o CSS por trás)
+{
+  const c = document.createElement('canvas'); c.width = c.height = 512
+  const x = c.getContext('2d'), g = x.createRadialGradient(270, 230, 20, 256, 256, 380)
+  g.addColorStop(0, '#2C3D10'); g.addColorStop(0.45, '#152006'); g.addColorStop(1, '#060902')
+  x.fillStyle = g; x.fillRect(0, 0, 512, 512)
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace
+  scene.background = tex
+}
+// celular em pé (21/out/2026): a tela é estreita; abre a vista para caber a sala na largura
+const VIEW0 = 30
+const vv = () => VIEW0
+let VIEW = vv()
+const asp = () => innerWidth / innerHeight
+const camera = new THREE.OrthographicCamera(-VIEW * asp(), VIEW * asp(), VIEW, -VIEW, -300, 400)
+camera.position.set(30, 30, 52)
+if (q.get('modelo') === 'c' || q.get('modelo') === 'e') { camera.position.set(4, 42, 46); camera.zoom = 1.05 }
+if (innerWidth <= 760) camera.position.set(58, 62, 12)
+camera.zoom = zoomGeral()
+camera.userData.celular = innerWidth <= 760
+// Enquadra a sala no espaço restante, sem cortar agentes atrás dos painéis.
+function zoomGeral() { return innerWidth <= 760 ? 0.65 : Math.min(1.9, Math.max(0.75, (innerWidth - 320) / innerHeight * 0.82)) }
+// abre espaço para o painel da esquerda
+const desloca = () => camera.setViewOffset(innerWidth, innerHeight, innerWidth < 760 ? 0 : -Math.min(165, innerWidth * 0.1), innerWidth < 760 ? innerHeight * 0.09 : -20, innerWidth, innerHeight)
+desloca()
+camera.updateProjectionMatrix()
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.enableDamping = true
+controls.target.set(...(q.get('modelo') === 'e' ? [-6, 1, 0] : q.get('modelo') === 'c' ? [0, 1, 0] : [0, 3, 1]))
+controls.maxPolarAngle = Math.PI * 0.42
+controls.minZoom = 0.6; controls.maxZoom = 4
+
+scene.add(new THREE.HemisphereLight(0xFFF8E6, 0x1B2704, 1.1))
+const sol = new THREE.DirectionalLight(0xFFF4DD, 2.0)
+sol.position.set(-20, 45, 25)
+sol.castShadow = true
+sol.shadow.mapSize.set(2048, 2048)
+Object.assign(sol.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45 })
+sol.shadow.bias = -0.0004
+scene.add(sol)
+
+// brilho (só o que emite luz passa do limiar: trilhos, anéis, telas)
+const composer = new EffectComposer(renderer)
+composer.addPass(new RenderPass(scene, camera))
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.24, 0.35, 1.05)
+composer.addPass(bloom)
+composer.addPass(new OutputPass())
+
+const mat = (cor, extra = {}) => new THREE.MeshStandardMaterial({ color: cor, roughness: 0.6, metalness: 0.05, ...extra })
+const luz = (cor, forca = 1.4) => new THREE.MeshStandardMaterial({ color: cor, emissive: cor, emissiveIntensity: forca, roughness: 0.3 })
+const tom = (hex, f) => { const c = new THREE.Color(hex); return f < 0 ? c.multiplyScalar(1 + f) : c.lerp(new THREE.Color('#ffffff'), f) }
+const sombra = m => { m.castShadow = true; m.receiveShadow = true; return m }
+const rotulo = (el, pos, pai = scene) => { const o = new CSS2DObject(el); o.position.copy(pos); pai.add(o); return o }
+const polar = (r, grau) => new THREE.Vector3(r * Math.cos((grau * Math.PI) / 180), 0, r * Math.sin((grau * Math.PI) / 180))
+
+// chão: grade polar suave, em volta do núcleo
+const grade = new THREE.PolarGridHelper(34, 12, 7, 96, 0x3C4C03, 0x26330A)
+grade.position.y = -0.6
+grade.material.transparent = true; grade.material.opacity = 0.25
+scene.add(grade)
+
+// ---------- planta: núcleo do zap no centro, ilhas dos times em volta ----------
+// ângulo (graus) de cada time em volta do núcleo; 90 = frente (a entrada)
+// O Comando não é ilha: fica na torre, em cima do núcleo do zap (térreo = operação,
+// alto = decisão). Análise de 21/out/2026: o zap está nos 8 caminhos (porta de
+// entrada) e o Comando em 5 (onde se decide); nenhum outro time passa de 3.
+// atrás do núcleo (200°–290°) fica vazio de propósito: é onde a torre aparece no alto
+// ?modelo=a: a hipótese A (o Comando é mais uma ilha, sem torre), para comparar
+// ?modelo=c: chaveamento de copa do mundo, da esquerda (o dono) para a direita
+// (os agentes), descendo por nível de importância (João, 22/out/2026)
+// ?modelo=e: quem pede (o João no alto e os clientes no chão) à esquerda, o zap
+// logo depois, e daí diretor → times → agentes (ideia do João, 22/out/2026:
+// ele também fala com o sistema pelo zap)
+const LADO = q.get('modelo') === 'e'
+const CHAVE = q.get('modelo') === 'c' || LADO
+const TORRE = !CHAVE && q.get('modelo') !== 'a'
+const ILHAS = CHAVE ? {} : TORRE ? { oficina: 188, cofre: 300, estudio: 32, campo: 140 } : { comando: 270, oficina: 205, cofre: 335, estudio: 30, campo: 150 }
+const TORRE_Y = 12
+const R_ILHA = 18
+const R_ANEL = 6.0   // anel do balcão
+const R_NUCLEO = 8.2 // borda do disco do balcão
+// chaveamento: colunas por nível (x) e uma fileira por time (z)
+const NIVEL = LADO ? { dono: -30, zap: -21, diretor: -12, time: -4.5, agentes: 1.8, entrada: -30 } : { dono: -27, diretor: -18.5, time: -9.5, agentes: -3.2, entrada: 24 }
+const ALTURA = { dono: 4.2, diretor: 2.8, time: 1.4 }
+const POR_FILEIRA = 8, PASSO_X = 2.75, PASSO_Z = 2.7
+const ORDEM_TIMES = LADO ? ['comando', 'oficina', 'cofre', 'estudio', 'campo'] : ['comando', 'zap', 'oficina', 'cofre', 'estudio', 'campo']
+const CHAVE_TIMES = {}
+if (CHAVE) {
+  let z = 0
+  for (const t of ORDEM_TIMES) {
+    const lista = D.agentes.filter(a => a.time === t && !a.joao && !a.diretor && a.id !== 'joao' && a.id !== 'diretor')
+    const fileiras = Math.max(1, Math.ceil(lista.length / POR_FILEIRA))
+    CHAVE_TIMES[t] = { lista, z0: z, fileiras, zc: z + ((fileiras - 1) * PASSO_Z) / 2 }
+    z += fileiras * PASSO_Z + 1.6
+  }
+  const meio = (z - 1.6 - PASSO_Z) / 2
+  for (const t of ORDEM_TIMES) { CHAVE_TIMES[t].z0 -= meio; CHAVE_TIMES[t].zc -= meio }
+}
+const ENTRADA = LADO ? new THREE.Vector3(NIVEL.entrada, 0, 7) : CHAVE ? new THREE.Vector3(NIVEL.entrada, 0, CHAVE_TIMES.zap.zc) : polar(16.5, 90)
+// lugar de cada agente do zap no anel (ângulo), perto da ilha com que mais conversa
+const ANEL_ZAP = {
+  'mesa-campo': 122, 'mesa-lavoura': 146, 'mesa-lab': 170, ensaio: 196, 'vigia-zap': 220,
+  'mesa-joao': 252, varredura: 284, 'mesa-fiscal': 314, 'mesa-financeiro': 340,
+  'mesa-revenda': 6, 'mesa-marketing': 32, conferente: 60,
+}
+
+// disco do balcão (núcleo) e o pódio da recepção
+const corZap = D.times.zap.cor
+if (!CHAVE) {
+  const discoZap = sombra(new THREE.Mesh(new THREE.CylinderGeometry(R_NUCLEO, R_NUCLEO + 0.3, 0.6, 96), mat('#E2DAC4')))
+  discoZap.position.y = -0.3
+  scene.add(discoZap)
+  const aro = new THREE.Mesh(new THREE.TorusGeometry(R_NUCLEO + 0.15, 0.09, 12, 128), luz(corZap, 1.1))
+  aro.rotation.x = Math.PI / 2; aro.position.y = 0.02
+  scene.add(aro)
+  const podio = sombra(new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.7, 0.5, 64), mat(tom(corZap, 0.55))))
+  podio.position.y = 0.25
+  scene.add(podio)
+  const aroPodio = new THREE.Mesh(new THREE.TorusGeometry(2.55, 0.07, 10, 96), luz(corZap, 1.4))
+  aroPodio.rotation.x = Math.PI / 2; aroPodio.position.y = 0.5
+  scene.add(aroPodio)
+}
+// ondas saindo da recepção (o zap chegando)
+const ondas = (CHAVE ? [] : [0, 1, 2]).map(k => {
+  const o = new THREE.Mesh(new THREE.RingGeometry(2.6, 2.75, 96), new THREE.MeshBasicMaterial({ color: corZap, transparent: true, opacity: 0.5, side: THREE.DoubleSide }))
+  o.rotation.x = -Math.PI / 2; o.position.y = 0.06; o.userData.fase = k / 3
+  scene.add(o)
+  return o
+})
+
+// ilhas dos times
+const centroIlha = {}
+const raioIlha = {}
+const porTime = {}
+for (const a of D.agentes) (porTime[a.time] ??= []).push(a)
+for (const [t, grau] of Object.entries(ILHAS)) {
+  const n = porTime[t]?.length ?? 0
+  const rr = Math.max(1.7, (n * 2.55) / (2 * Math.PI))
+  const ri = rr + 2.0
+  const c = polar(R_ILHA + (ri - 5) * 0.6, grau)
+  centroIlha[t] = c; raioIlha[t] = { rr, ri }
+  const time = D.times[t]
+  const disco = sombra(new THREE.Mesh(new THREE.CylinderGeometry(ri, ri + 0.25, 0.6, 96), mat(tom(time.cor, t === 'estudio' ? 0.35 : 0.72))))
+  disco.position.set(c.x, -0.3, c.z)
+  scene.add(disco)
+  const aroI = new THREE.Mesh(new THREE.TorusGeometry(ri + 0.12, 0.08, 10, 128), luz(t === 'comando' ? '#6E8A2A' : time.cor, 1.6))
+  aroI.rotation.x = Math.PI / 2; aroI.position.set(c.x, 0.02, c.z)
+  scene.add(aroI)
+  // passarela até o núcleo
+  const de = polar(R_NUCLEO + 0.2, grau), ate = c.clone().sub(polar(ri, grau))
+  const comp = de.distanceTo(ate)
+  const ponte = sombra(new THREE.Mesh(new THREE.BoxGeometry(comp, 0.18, 1.5), mat('#E9E2CF')))
+  ponte.position.copy(de.clone().lerp(ate, 0.5)).setY(-0.12)
+  ponte.rotation.y = -(grau * Math.PI) / 180
+  scene.add(ponte)
+  for (const lado of [-0.68, 0.68]) {
+    const fio = new THREE.Mesh(new THREE.BoxGeometry(comp, 0.05, 0.06), luz(t === 'comando' ? '#6E8A2A' : time.cor, 1.2))
+    fio.position.copy(ponte.position).add(polar(lado, grau + 90)).setY(0.0)
+    fio.rotation.y = ponte.rotation.y
+    scene.add(fio)
+  }
+  // placa do time, na borda de trás da ilha
+  const el = document.createElement('div')
+  el.className = 'placa'
+  el.style.background = time.cor
+  el.style.color = time.texto
+  const vivos = (porTime[t] ?? []).filter(a => !a.fantasma).length
+  el.innerHTML = `<img src="${FOLHA}">${time.nome}<small>${vivos} no ar · ${n - vivos} na fila</small>`
+  rotulo(el, c.clone().add(new THREE.Vector3(0, 0.2, ri + 0.9)))
+}
+// a entrada (clientes, produtores e monitores chegam pelo zap)
+const tapete = sombra(new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 0.4, 64), mat('#D9CBA8')))
+tapete.position.set(ENTRADA.x, -0.2, ENTRADA.z)
+scene.add(tapete)
+if (!CHAVE) {
+  const de = polar(R_NUCLEO + 0.2, 90), ate = ENTRADA.clone().sub(polar(3.6, 90))
+  const ponte = sombra(new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.18, de.distanceTo(ate)), mat('#E9E2CF')))
+  ponte.position.copy(de.clone().lerp(ate, 0.5)).setY(-0.12)
+  scene.add(ponte)
+  const el = document.createElement('div'); el.className = 'placa'; el.style.background = '#E1D49B'; el.style.color = '#1B2704'
+  el.innerHTML = `<img src="${FOLHA}">Entrada pelo zap`
+  rotulo(el, ENTRADA.clone().add(new THREE.Vector3(0, 0.3, 3.4)))
+}
+
+const ELEVADOR = []
+// torre do Comando, em cima do núcleo do zap
+const nComando = D.agentes.filter(a => a.time === 'comando').length
+const rrT = Math.max(1.7, (nComando * 2.55) / (2 * Math.PI)), riT = rrT + 1.8
+if (TORRE) {
+  const time = D.times.comando
+  const disco = sombra(new THREE.Mesh(new THREE.CylinderGeometry(riT, riT - 0.4, 0.7, 96), mat('#DCD3BA')))
+  disco.position.y = TORRE_Y - 0.35
+  scene.add(disco)
+  const aroT = new THREE.Mesh(new THREE.TorusGeometry(riT + 0.05, 0.09, 10, 128), luz('#9BB85A', 1.7))
+  aroT.rotation.x = Math.PI / 2; aroT.position.y = TORRE_Y
+  scene.add(aroT)
+  // coluna de vidro e o feixe de luz que liga o zap à torre
+  const coluna = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, TORRE_Y - 1.2, 32, 1, true), new THREE.MeshPhysicalMaterial({ color: '#CFE3A8', transparent: true, opacity: 0.16, roughness: 0.1, side: THREE.DoubleSide }))
+  coluna.position.y = 0.5 + (TORRE_Y - 1.2) / 2
+  const feixe = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, TORRE_Y - 1.2, 12), luz('#B8F59A', 1.8))
+  feixe.position.copy(coluna.position)
+  scene.add(coluna, feixe)
+  // anéis subindo pela coluna: o pedido indo do zap para quem decide
+  for (let k = 0; k < 4; k++) {
+    const r = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.05, 8, 40), luz('#B8F59A', 1.6))
+    r.rotation.x = Math.PI / 2; r.userData.fase = k / 4
+    scene.add(r); ELEVADOR.push(r)
+  }
+  const el = document.createElement('div')
+  el.className = 'placa'; el.style.background = time.cor; el.style.color = time.texto
+  const vivos = D.agentes.filter(a => a.time === 'comando' && !a.fantasma).length
+  el.innerHTML = `<img src="${FOLHA}">${time.nome}<small>decide · ${vivos} no ar · ${nComando - vivos} na fila</small>`
+  rotulo(el, new THREE.Vector3(0, TORRE_Y - 0.4, riT + 0.9))
+}
+
+// ---------- bonequinho ----------
+const texFolha = new THREE.TextureLoader().load(FOLHA)
+texFolha.colorSpace = THREE.SRGBColorSpace
+const PELES = ['#F1C9A5', '#E0AC83', '#C68B59', '#A9714B']
+const hash = s => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7)
+
+function boneco(id, cor, chapeu, fantasma) {
+  const g = new THREE.Group()
+  const m = fantasma ? new THREE.MeshStandardMaterial({ color: cor, transparent: true, opacity: 0.22, roughness: 0.9 }) : mat(cor, { roughness: 0.7 })
+  const corpo = sombra(new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.62, 6, 18), m))
+  corpo.position.y = 0.95
+  g.add(corpo)
+  if (fantasma) {
+    const contorno = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CapsuleGeometry(0.42, 0.62, 3, 8), 30), new THREE.LineDashedMaterial({ color: tom(cor, 0.3), dashSize: 0.12, gapSize: 0.08 }))
+    contorno.computeLineDistances(); contorno.position.y = 0.95
+    g.add(contorno)
+  }
+  const pele = fantasma ? new THREE.MeshStandardMaterial({ color: '#EEEAE0', transparent: true, opacity: 0.3 }) : mat(PELES[hash(id) % PELES.length])
+  const cab = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 16), pele))
+  cab.position.y = 1.86
+  g.add(cab)
+  if (chapeu) {
+    const folha = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.42), new THREE.MeshBasicMaterial({ map: texFolha, transparent: true, opacity: fantasma ? 0.35 : 1 }))
+    folha.position.set(chapeu === 'gravata' ? -0.14 : 0, 1.12, 0.43)
+    g.add(folha)
+  }
+  if (!fantasma && chapeu) {
+    const escuro = mat('#2B2B2B')
+    if (chapeu === 'bone' || chapeu === 'agronomo') {
+      const copa = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat(chapeu === 'agronomo' ? '#A2A72A' : cor)))
+      copa.position.y = 1.92
+      const aba = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 20, 1, false, -Math.PI / 2, Math.PI), mat(chapeu === 'agronomo' ? '#7C8020' : tom(cor, 0.15))))
+      aba.position.set(0, 1.93, 0.26); aba.scale.set(1, 1, 1.1)
+      g.add(copa, aba)
+      if (chapeu === 'agronomo') { const frente = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.18), mat('#F5F1E3')); frente.position.set(0, 2.08, 0.3); frente.rotation.x = -0.5; g.add(frente) }
+    } else if (chapeu === 'fone') {
+      const arco = new THREE.Mesh(new THREE.TorusGeometry(0.37, 0.045, 8, 24, Math.PI), escuro)
+      arco.position.y = 1.88; arco.rotation.y = Math.PI / 2
+      const o1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.1, 16), escuro); o1.rotation.z = Math.PI / 2; o1.position.set(0.36, 1.86, 0)
+      const o2 = o1.clone(); o2.position.x = -0.36
+      const mic = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), luz('#F9A322', 1)); mic.position.set(0.22, 1.68, 0.3)
+      g.add(arco, o1, o2, mic)
+    } else if (chapeu === 'capacete') {
+      const casco = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.39, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat('#F4F1E6')))
+      casco.position.y = 1.9
+      const aba = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.04, 6, 24), mat(cor)); aba.rotation.x = Math.PI / 2; aba.position.y = 1.9
+      const crista = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.08, 0.7), mat(cor)); crista.position.y = 2.27
+      g.add(casco, aba, crista)
+    } else if (chapeu === 'boina') {
+      const boina = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 10), mat('#3F281A')))
+      boina.scale.set(1, 0.32, 1); boina.position.set(-0.05, 2.12, 0); boina.rotation.z = 0.18
+      g.add(boina)
+    } else if (chapeu === 'gravata') {
+      const cabelo = sombra(new THREE.Mesh(new THREE.SphereGeometry(0.355, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2.4), mat('#3E2723')))
+      cabelo.position.y = 1.88; cabelo.rotation.x = -0.25
+      const gravata = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.42, 4), mat('#1B2704')); gravata.rotation.x = Math.PI; gravata.position.set(0.13, 1.18, 0.42)
+      g.add(cabelo, gravata)
+    }
+  }
+  return g
+}
+
+// posto moderno: bancada curva com tela de vidro
+function posto(ocupado, fantasma, cor) {
+  const g = new THREE.Group()
+  const op = fantasma ? { transparent: true, opacity: 0.35 } : {}
+  const bancada = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.08, 32, 1, false, Math.PI * 0.7, Math.PI * 0.6), mat('#FFFFFF', op)))
+  bancada.position.y = 0.78
+  const pe = sombra(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.12, 0.76, 12), mat('#9AA08A', op)))
+  pe.position.set(0, 0.38, -0.55)
+  const tela = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.04), ocupado ? luz('#7FD3F5', 1.3) : mat('#2E3828', op))
+  tela.position.set(0, 1.2, -0.62); tela.rotation.x = -0.12
+  g.add(bancada, pe, tela)
+  g.userData.tela = tela
+  return g
+}
+
+// ---------- agentes ----------
+const POS = {}
+const OBJ = {}
+const agentePor = Object.fromEntries(D.agentes.map(a => [a.id, a]))
+function colocar(a, onde, cor, chapeu, extra = {}) {
+  const g = new THREE.Group()
+  g.position.copy(onde)
+  // todos olham para a câmera (frente, +z), o posto fica atrás
+  const p = posto(a.ocupado, a.fantasma, cor)
+  g.add(p)
+  const b = boneco(a.id, cor, chapeu, a.fantasma)
+  const escala = extra.escala ?? 1.3
+  b.scale.setScalar(escala)
+  if (!(a.ocupado || a.fantasma || a.joao)) { b.position.set(0.85, 0, 0.35); b.rotation.y = -0.4 }
+  g.add(b)
+  const anel = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.0, 48), new THREE.MeshBasicMaterial({ color: '#9BEA7E', transparent: true, opacity: a.ocupado ? 0.8 : 0, side: THREE.DoubleSide }))
+  anel.rotation.x = -Math.PI / 2; anel.position.set(b.position.x, 0.03, b.position.z)
+  g.add(anel)
+  scene.add(g)
+  const cabeca = new THREE.Vector3(onde.x + b.position.x, onde.y + 2.3 * escala, onde.z + b.position.z)
+  POS[a.id] = cabeca
+  const el = document.createElement('div')
+  el.className = 'rot compacto' + (a.fantasma ? ' fantasma' : '') + (extra.centro ? ' centro' : '')
+  el.tabIndex = 0; el.setAttribute('role', 'button'); el.setAttribute('aria-label', a.nome + ': ' + a.legenda)
+  el.onclick = () => abrirFicha(a.id)
+  el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirFicha(a.id) } }
+  rotulo(el, cabeca.clone().add(new THREE.Vector3(0, 0.35, 0)))
+  OBJ[a.id] = { el, boneco: b, anel, base: b.position.y }
+  pintarRotulo(a)
+}
+function pintarRotulo(a) {
+  const o = OBJ[a.id]
+  const gomos = a.vida === null ? 0 : Math.round(a.vida / 10)
+  const erro = a.falhou || a.alerta === 'urgente'
+  o.el.innerHTML = `<div class="n">${a.nome}</div>` +
+    `<div class="vida${erro ? ' erro' : ''}${a.fantasma ? ' fantasma' : ''}">${Array.from({ length: 10 }, (_, i) => `<div class="${i < gomos ? 'c' : ''}"></div>`).join('')}</div>` +
+    `<div class="l${erro ? ' erro' : a.fantasma ? ' cinza' : ''}">${a.legenda}</div>`
+}
+// recepção no pódio do centro; o resto do zap no anel
+for (const a of CHAVE ? [] : porTime.zap ?? []) {
+  if (a.id === 'recepcao') colocar(a, new THREE.Vector3(0, 0.5, 0.2), corZap, 'fone', { escala: 1.7, centro: true })
+  else colocar(a, polar(R_ANEL, ANEL_ZAP[a.id] ?? 0), corZap, 'fone')
+}
+if (!CHAVE) OBJ.recepcao.el.classList.remove('compacto')
+
+// ---------- chaveamento (?modelo=c) ----------
+// degraus: o dono no mais alto, à esquerda; depois o diretor; depois um
+// pedestal por time; depois os agentes no chão; os clientes chegam pela direita.
+// As linhas da chave são desenhadas no chão, como numa tabela de copa.
+function trilhoChao(pontos, cor, forca = 1.2, raio = 0.07) {
+  for (let i = 0; i < pontos.length - 1; i++) {
+    const a = pontos[i], b = pontos[i + 1]
+    const tubo = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 4, raio, 8), luz(cor, forca))
+    scene.add(tubo)
+    const junta = new THREE.Mesh(new THREE.SphereGeometry(raio * 1.4, 10, 8), luz(cor, forca))
+    junta.position.copy(b); scene.add(junta)
+  }
+}
+function pedestal(x, z, alt, lado, cor, rotuloHtml, time = false) {
+  const p = sombra(new THREE.Mesh(new THREE.BoxGeometry(lado, alt, lado), mat('#B6AD97', { roughness: 0.85 })))
+  p.position.set(x, alt / 2 - 0.3, z)
+  scene.add(p)
+  const aro = new THREE.Mesh(new THREE.BoxGeometry(lado + 0.12, 0.08, lado + 0.12), mat(cor))
+  aro.position.set(x, alt - 0.3, z)
+  scene.add(aro)
+  if (rotuloHtml) {
+    const el = document.createElement('div'); el.className = 'placa' + (time ? ' time-placa' : ''); if (time) el.dataset.time = time
+    el.style.background = cor === '#B8F59A' ? '#1B2704' : cor
+    const fundo = new THREE.Color(el.style.background)
+    el.style.color = fundo.r * .2126 + fundo.g * .7152 + fundo.b * .0722 > .179 ? '#101706' : '#F4EFE1'; el.innerHTML = rotuloHtml
+    rotulo(el, new THREE.Vector3(x, Math.max(0.2, alt - 1.6), z + lado / 2 + 0.6))
+  }
+  return alt - 0.3
+}
+if (CHAVE) {
+  const Y = 0.05
+  const zDiretor = 0
+  const zDono = LADO ? -5 : zDiretor
+  const joao = agentePor.joao, diretor = agentePor.diretor
+  const corCmd = D.times.comando.cor
+  // 1. o dono
+  const topoDono = pedestal(NIVEL.dono, zDono, ALTURA.dono, 3.6, '#F9A322', `<img src="${FOLHA}">Dono`)
+  if (joao) colocar(joao, new THREE.Vector3(NIVEL.dono, topoDono, zDono), corCmd, 'bone', { escala: 1.7, centro: true })
+  // 2. o diretor
+  const topoDir = pedestal(NIVEL.diretor, zDiretor, ALTURA.diretor, 3.2, '#B8F59A', `<img src="${FOLHA}">Diretor`)
+  if (diretor) colocar(diretor, new THREE.Vector3(NIVEL.diretor, topoDir, zDiretor), corCmd, 'bone', { escala: 1.5 })
+  if (!LADO) trilhoChao([new THREE.Vector3(NIVEL.diretor, Y, zDiretor), new THREE.Vector3(NIVEL.dono, Y, zDiretor)], '#F9A322', 1.8, 0.11)
+  if (LADO) {
+    // o zap: a porta de quem pede (o João e os clientes), num bloco logo depois deles
+    const zap = D.agentes.filter(a => a.time === 'zap')
+    const cols = 3, px = 2.6, pz = 2.5
+    const linhas = Math.ceil(zap.length / cols)
+    const z0 = -((linhas - 1) * pz) / 2
+    const piso = sombra(new THREE.Mesh(new THREE.BoxGeometry(cols * px + 1.2, 0.3, linhas * pz + 1.2), mat(tom(D.times.zap.cor, 0.72))))
+    piso.position.set(NIVEL.zap, -0.15, 0)
+    scene.add(piso)
+    const borda = new THREE.Mesh(new THREE.BoxGeometry(cols * px + 1.4, 0.06, linhas * pz + 1.4), luz(D.times.zap.cor, 1.0))
+    borda.position.set(NIVEL.zap, -0.32, 0); scene.add(borda)
+    // a recepção primeiro, na frente do bloco
+    const ordem = [...zap].sort((a, b) => (a.id === 'recepcao' ? -1 : b.id === 'recepcao' ? 1 : 0))
+    ordem.forEach((a, i) => colocar(a, new THREE.Vector3(NIVEL.zap - px + (i % cols) * px, 0, z0 + Math.floor(i / cols) * pz), D.times.zap.cor, 'fone', { escala: 1.15 }))
+    const el = document.createElement('div'); el.className = 'placa'; el.style.background = D.times.zap.cor; el.style.color = '#1B2704'
+    el.innerHTML = `<img src="${FOLHA}">Balcão do zap<small>porta de todos</small>`
+    rotulo(el, new THREE.Vector3(NIVEL.zap, 0.2, (linhas * pz) / 2 + 1.4))
+    // quem pede → zap → diretor
+    const xEsq = NIVEL.zap - (cols * px) / 2 - 0.6, xDir = NIVEL.zap + (cols * px) / 2 + 0.6
+    trilhoChao([new THREE.Vector3(NIVEL.dono, Y, zDono), new THREE.Vector3(NIVEL.dono + 4.2, Y, zDono), new THREE.Vector3(NIVEL.dono + 4.2, Y, 0), new THREE.Vector3(xEsq, Y, 0)], '#F9A322', 1.8, 0.1)
+    trilhoChao([new THREE.Vector3(NIVEL.entrada + 3.6, Y, ENTRADA.z), new THREE.Vector3(NIVEL.dono + 4.2, Y, ENTRADA.z), new THREE.Vector3(NIVEL.dono + 4.2, Y, 0)], '#E1D49B', 1.4, 0.08)
+    trilhoChao([new THREE.Vector3(xDir, Y, 0), new THREE.Vector3(NIVEL.diretor, Y, zDiretor)], '#F9A322', 1.6, 0.1)
+  }
+  // 3. um pedestal por time e 4. os agentes do time em fileiras
+  const xJunta = (NIVEL.diretor + NIVEL.time) / 2
+  for (const t of ORDEM_TIMES) {
+    const { lista, z0, zc, fileiras } = CHAVE_TIMES[t]
+    if (!lista.length) continue
+    const time = D.times[t]
+    const corLinha = t === 'comando' ? '#9BB85A' : time.cor
+    const vivos = lista.filter(a => !a.fantasma).length
+    pedestal(NIVEL.time, zc, ALTURA.time, 2.6, corLinha, `<img src="${FOLHA}">${time.nome}<small>${vivos} no ar · ${lista.length - vivos} na fila</small>`, t)
+    // chave: time → junta → diretor
+    trilhoChao([new THREE.Vector3(NIVEL.time, Y, zc), new THREE.Vector3(xJunta, Y, zc), new THREE.Vector3(xJunta, Y, zDiretor), new THREE.Vector3(NIVEL.diretor, Y, zDiretor)], corLinha, 1.3, 0.08)
+    // piso de cada fileira e os agentes
+    for (let f = 0; f < fileiras; f++) {
+      const z = z0 + f * PASSO_Z
+      const naFileira = lista.slice(f * POR_FILEIRA, (f + 1) * POR_FILEIRA)
+      const larg = (naFileira.length - 1) * PASSO_X + 2.6
+      const piso = sombra(new THREE.Mesh(new THREE.BoxGeometry(larg, 0.3, 2.2), mat(tom(time.cor, t === 'estudio' ? 0.35 : 0.72))))
+      piso.position.set(NIVEL.agentes + 1 + larg / 2 - 1.3, -0.15, z)
+      scene.add(piso)
+      // chave: fileira → time
+      trilhoChao([new THREE.Vector3(NIVEL.agentes - 0.6, Y, z), new THREE.Vector3(NIVEL.agentes - 2.2, Y, z), new THREE.Vector3(NIVEL.agentes - 2.2, Y, zc), new THREE.Vector3(NIVEL.time, Y, zc)], corLinha, 1.1, 0.06)
+      naFileira.forEach((a, i) => colocar(a, new THREE.Vector3(NIVEL.agentes + 1 + i * PASSO_X, 0, z), time.cor, CHAPEU[t], { escala: 1.15 }))
+    }
+  }
+  // 5. a entrada, na ponta direita, chegando no balcão do zap
+  const zZap = CHAVE_TIMES.zap ?? { lista: [], zc: 0 }
+  if (!LADO) {
+  const fimZap = NIVEL.agentes + 1 + (Math.min(POR_FILEIRA, zZap.lista.length) - 1) * PASSO_X + 1.6
+  trilhoChao([new THREE.Vector3(NIVEL.entrada - 3.6, Y, zZap.zc), new THREE.Vector3(fimZap, Y, zZap.zc)], D.times.zap.cor, 1.3, 0.08)
+  const el = document.createElement('div'); el.className = 'placa'; el.style.background = '#E1D49B'; el.style.color = '#1B2704'
+  el.innerHTML = `<img src="${FOLHA}">Entrada pelo zap`
+  rotulo(el, ENTRADA.clone().add(new THREE.Vector3(0, 0.3, 3.4)))
+  } else {
+    const el = document.createElement('div'); el.className = 'placa'; el.style.background = '#E1D49B'; el.style.color = '#1B2704'
+    el.innerHTML = `<img src="${FOLHA}">Clientes, produtores e monitores`
+    rotulo(el, ENTRADA.clone().add(new THREE.Vector3(0, 0.3, 3.4)))
+  }
+  // degraus de fundo: a escada da importância, da esquerda (alto) para a direita (chão)
+  const zMin = Math.min(...ORDEM_TIMES.map(t => CHAVE_TIMES[t].z0)) - 2.5
+  const zMax = Math.max(...ORDEM_TIMES.map(t => CHAVE_TIMES[t].z0 + (CHAVE_TIMES[t].fileiras - 1) * PASSO_Z)) + 2.5
+  const faixa = (x0, x1, cor) => { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.12, zMax - zMin), new THREE.MeshStandardMaterial({ color: cor, transparent: true, opacity: 0.35 })); m.position.set((x0 + x1) / 2, -0.62, (zMin + zMax) / 2); m.receiveShadow = true; scene.add(m) }
+  if (LADO) {
+    faixa(NIVEL.dono - 3.5, NIVEL.dono + 4.2, '#5A4A12')
+    faixa(NIVEL.dono + 4.2, (NIVEL.zap + NIVEL.diretor) / 2, '#6A4A08')
+    faixa((NIVEL.zap + NIVEL.diretor) / 2, xJunta, '#3C4C03')
+    faixa(xJunta, NIVEL.agentes - 1.4, '#2C3A0C')
+  } else {
+    faixa(NIVEL.dono - 3, (NIVEL.dono + NIVEL.diretor) / 2, '#5A4A12')
+    faixa((NIVEL.dono + NIVEL.diretor) / 2, xJunta, '#3C4C03')
+    faixa(xJunta, NIVEL.agentes - 1.4, '#2C3A0C')
+  }
+  const NIVEIS = LADO
+    ? [['1 · quem pede', NIVEL.dono], ['2 · zap', NIVEL.zap], ['3 · diretor', NIVEL.diretor], ['4 · times', NIVEL.time], ['5 · agentes', NIVEL.agentes + 8]]
+    : [['1 · dono', NIVEL.dono], ['2 · diretor', NIVEL.diretor], ['3 · times', NIVEL.time], ['4 · agentes', NIVEL.agentes + 8], ['entrada', NIVEL.entrada]]
+  for (const [rot, x] of NIVEIS) {
+    const e = document.createElement('div'); e.className = 'nivel'; e.textContent = rot
+    rotulo(e, new THREE.Vector3(x, 0, zMin - 1.2))
+  }
+}
+// Comando na torre, em círculo
+;(TORRE ? porTime.comando ?? [] : []).forEach((a, i, lista) => {
+  const ang = -90 + (360 * i) / lista.length
+  colocar(a, polar(rrT, ang).setY(TORRE_Y), D.times.comando.cor, 'bone')
+})
+// times nas ilhas: em círculo, os da frente por último
+for (const [t] of Object.entries(ILHAS)) {
+  const lista = porTime[t] ?? []
+  const c = centroIlha[t], { rr } = raioIlha[t]
+  lista.forEach((a, i) => {
+    const ang = lista.length === 1 ? 0 : -90 + (360 * i) / lista.length
+    const onde = lista.length === 1 ? c.clone() : c.clone().add(polar(rr, ang))
+    colocar(a, onde, D.times[t].cor, CHAPEU[t])
+  })
+}
+// gente de fora, na entrada
+const FORA = { Cliente: -2.2, Produtor: 0, Monitor: 2.2 }
+for (const [nome, dx] of Object.entries(FORA)) {
+  const b = boneco(nome, '#8E979C', null, false)
+  b.scale.setScalar(1.25)
+  b.position.set(ENTRADA.x + dx, 0, ENTRADA.z + (dx ? 0.6 : -0.4))
+  scene.add(b)
+  POS['fora:' + nome] = new THREE.Vector3(ENTRADA.x + dx, 2.8, ENTRADA.z + (dx ? 0.6 : -0.4))
+  const el = document.createElement('div'); el.className = 'rot'; el.innerHTML = `<div class="n" style="background:rgba(225,212,155,.9);color:#1B2704">${nome}</div>`
+  rotulo(el, POS['fora:' + nome].clone().add(new THREE.Vector3(0, 0.5, 0)))
+}
+
+// ---------- trilhos de luz: os caminhos do trabalho ----------
+const vazio = id => { if (id.startsWith('fora:')) return false; if (id === 'mesas') { const ms = D.agentes.filter(a => a.id.startsWith('mesa-')); return ms.every(m => m.fantasma && !m.cobre) } const a = agentePor[id]; return a?.fantasma && !a.cobre }
+const posEst = id => (id === 'mesas' ? (CHAVE ? POS['mesa-campo'].clone().lerp(POS['mesa-joao'], 0.5) : polar(R_ANEL, 236).setY(2.3 * 1.3)) : POS[id])
+const TRILHOS = []
+D.linhas.forEach((ln, li) => {
+  const g = new THREE.Group()
+  const altura = 0.7 + li * 0.16
+  const cor = new THREE.Color(ln.cor)
+  const pts = ln.estacoes.map(e => posEst(e.id).clone().add(new THREE.Vector3(0, altura, 0)))
+  const curvas = []
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1]
+    const meio = a.clone().lerp(b, 0.5)
+    meio.y += 1.3 + a.distanceTo(b) * 0.09
+    // ida e volta pelo mesmo par: o arco da volta sai para o outro lado
+    const lado = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3(0, 1, 0)).normalize()
+    meio.add(lado.multiplyScalar(0.6 + li * 0.12))
+    const curva = new THREE.QuadraticBezierCurve3(a, meio, b)
+    curvas.push(curva)
+    if (!(vazio(ln.estacoes[i].id) || vazio(ln.estacoes[i + 1].id))) {
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(curva, 56, 0.1, 10), new THREE.MeshStandardMaterial({ color: cor, emissive: cor, emissiveIntensity: 1.25, roughness: 0.3, transparent: true, opacity: 0.95 })))
+    } else {
+      // ninguém faz este trecho: pontilhado apagado
+      for (let k = 0; k <= 20; k++) {
+        const p = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 6), new THREE.MeshBasicMaterial({ color: cor, transparent: true, opacity: 0.7 }))
+        p.position.copy(curva.getPoint(k / 20))
+        g.add(p)
+      }
+    }
+  }
+  ln.estacoes.forEach((e, i) => {
+    const anel = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.055, 8, 20), luz(ln.cor, 1.5))
+    anel.position.copy(pts[i]); anel.rotation.x = Math.PI / 2
+    g.add(anel)
+  })
+  const caminho = new THREE.CurvePath(); curvas.forEach(c => caminho.add(c))
+  const pacotes = [0, 0.5].map(t0 => { const p = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), luz(ln.cor, 3)); g.add(p); return { p, t: t0 } })
+  scene.add(g)
+  if (CHAVE) g.visible = false
+  TRILHOS.push({ g, ln, caminho, pacotes, pts, numeros: [] })
+})
+
+// ---------- interface ----------
+const lista = document.getElementById('lista')
+D.linhas.forEach((ln, i) => {
+  const buracos = ln.estacoes.filter(e => vazio(e.id)).length
+  const el = document.createElement('button')
+  el.type = 'button'
+  el.setAttribute('aria-pressed', 'false')
+  el.className = 'linha'
+  el.style.setProperty('--cor', ln.cor)
+  el.innerHTML = `<div class="num">${i + 1}</div><div><b>${ln.nome}</b><span>${ln.texto}</span><i class="${buracos ? 'buraco' : 'ok'}">${buracos ? buracos + ' parada(s) sem ninguém' : 'funciona hoje'}</i></div>`
+  el.onclick = () => { parar(); destacar(ativa === i ? null : i) }
+  lista.appendChild(el)
+})
+let ativa = null
+const nomeEst = e => (e.id.startsWith('fora:') ? e.id.slice(5) : e.id === 'mesas' ? 'Mesas do zap' : agentePor[e.id]?.nome ?? e.id)
+function destacar(i) {
+  ativa = i
+  document.querySelectorAll('.linha').forEach((el, k) => (el.classList.toggle('ativa', k === i), el.setAttribute('aria-pressed', String(k === i))))
+  TRILHOS.forEach((tr, k) => {
+    const on = i === null || k === i
+    tr.g.visible = !CHAVE || k === i
+    tr.g.traverse(o => { if (o.material) { o.material.transparent = true; o.userData.op ??= o.material.opacity; o.material.opacity = on ? o.userData.op : 0.06 } })
+    tr.numeros.forEach(n => n.removeFromParent()); tr.numeros = []
+  })
+  const ids = new Set(i === null ? [] : D.linhas[i].estacoes.map(e => (e.id === 'mesas' ? 'mesa-joao' : e.id)))
+  for (const [id, o] of Object.entries(OBJ)) {
+    const na = ids.has(id)
+    o.el.classList.toggle('apagado', i !== null && !na && id !== 'recepcao')
+    o.el.classList.toggle('compacto', !na && id !== 'recepcao')
+  }
+  const passos = document.getElementById('passos')
+  if (i === null) { passos.style.display = 'none'; enquadrar(null); return }
+  const ln = D.linhas[i], tr = TRILHOS[i]
+  ln.estacoes.forEach((e, k) => {
+    const el = document.createElement('div'); el.className = 'num3d'; el.style.background = ln.cor; el.textContent = k + 1
+    tr.numeros.push(rotulo(el, tr.pts[k].clone().add(new THREE.Vector3(0, 0.6, 0))))
+  })
+  passos.style.setProperty('--cor', ln.cor)
+  passos.style.display = 'flex'
+  passos.innerHTML = ln.estacoes.map((e, k) => `<span class="p"><em>${k + 1}</em>${nomeEst(e)}${e.portao ? `<span class="portao">🛡 ${e.portao}</span>` : ''}</span>`).join('<span class="seta">→</span>')
+  enquadrar(tr.pts)
+}
+let voo = null
+function enquadrar(pts) {
+  const alvo = q.get('modelo') === 'e' ? new THREE.Vector3(-6, 1, 0) : q.get('modelo') === 'c' ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(0, 3, 1)
+  let zoom = zoomGeral()
+  if (pts) {
+    const caixa = new THREE.Box3().setFromPoints(pts)
+    caixa.getCenter(alvo)
+    const tam = caixa.getSize(new THREE.Vector3())
+    zoom = Math.min(2.4, Math.max(1.2, 62 / Math.max(tam.x + tam.z, 20)))
+  }
+  voo = { de: controls.target.clone(), para: alvo, z0: camera.zoom, z1: zoom, t: 0 }
+}
+let tour = null
+const btTour = document.getElementById('tour')
+function parar() { if (tour) { clearInterval(tour); tour = null; btTour.textContent = '▶ Tour' } }
+btTour.onclick = () => {
+  if (tour) { parar(); destacar(null); return }
+  let k = 0
+  destacar(0)
+  btTour.textContent = '■ Parar'
+  tour = setInterval(() => { k = (k + 1) % D.linhas.length; destacar(k) }, 7000)
+}
+function abrirFicha(id) {
+  const a = agentePor[id], f = document.getElementById('ficha')
+  if (!a) return
+  const t = D.times[a.time]
+  const membros = D.agentes.filter(m => m.time === a.time && !m.joao && !m.diretor && m.id !== 'joao' && m.id !== 'diretor')
+  const noAr = membros.filter(m => !m.fantasma).length
+  const passa = D.linhas.filter(l => l.estacoes.some(e => e.id === id || (e.id === 'mesas' && id.startsWith('mesa-')))).map(l => l.nome)
+  f.style.display = 'block'
+  f.innerHTML = `<button class="fechar" aria-label="Fechar ficha" onclick="this.parentNode.style.display='none'">×</button><div class="time" style="color:${t.cor === '#1B2704' ? '#9BB85A' : t.cor}">${t.nome.toUpperCase()}</div><h3>${a.nome}</h3>` +
+    `<p>${noAr} no ar · ${membros.length - noAr} na fila neste time</p>` +
+    `<p>${a.fantasma ? (a.cobre ? `Ainda não existe. Hoje quem faz: ${a.cobre}.` : 'Aprovado, na fila de construção. Ninguém faz este trabalho hoje.') : a.agora || '—'}</p>` +
+    `<p style="color:#B8F59A"><b>${a.legenda}</b></p>` +
+    `<p style="color:#A9B096;font-size:11.5px">Caminhos: ${passa.join(', ') || 'bastidor (trabalha fora dos caminhos)'}</p>`
+}
+// "Precisa de você": quem deu erro, quem está urgente e a sua própria fila da semana
+{
+  const itens = D.agentes.filter(a => !a.fantasma && (a.falhou || a.alerta === 'urgente'))
+    .map(a => `<button class="it" data-id="${a.id}">${a.nome}<small>${a.falhou ? 'erro na última ronda' : 'urgente'}</small></button>`)
+  const joao = D.agentes.find(a => a.joao)
+  if (joao?.filaSemana) itens.push(`<button class="it" data-id="${joao.id}">Sua fila<small>${joao.filaSemana} da semana</small></button>`)
+  const caixa = document.getElementById('atencao')
+  if (itens.length) {
+    caixa.style.display = 'flex'
+    caixa.innerHTML = '<b>Precisa de você</b>' + itens.join('')
+    caixa.querySelectorAll('.it').forEach(el => (el.onclick = () => abrirFicha(el.dataset.id)))
+  }
+}
+const trabalhando = D.agentes.filter(a => a.ocupado).length
+const aConstruir = D.agentes.filter(a => a.situacao === 'na fila').length
+document.getElementById('resumo').textContent = `${trabalhando} trabalhando agora · ${D.agentes.length - aConstruir} no ar · ${aConstruir} na fila de construção · medido às ${hora(D.medidoEm)}`
+const tanque = (nome, t) => {
+  const livre = t?.leitura === 'medida' && typeof t.livre_pct === 'number' ? t.livre_pct : null
+  const cor = livre !== null && livre < 20 ? '#F28C1C' : '#3DBB3D'
+  return `<div class="tanque"><div class="t"><div style="height:${livre ?? 0}%;background:${cor};color:${cor}"></div></div><div><b>${nome}</b><span>${livre !== null ? livre + '% livre' : 'sem leitura'}</span><small>${t?.renova_em ? 'renova ' + new Date(t.renova_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''}</small></div></div>`
+}
+document.getElementById('direita').innerHTML = tanque('Cota Claude', D.cota?.claude) + tanque('Cota Codex', D.cota?.codex)
+document.getElementById('legenda').innerHTML = Object.values(D.times).map(t => `<span><em style="background:${t.cor === '#1B2704' ? '#6E8A2A' : t.cor}"></em>${t.nome}</span>`).join('') +
+  `<span>barra cheia = pronto</span><span>laranja piscando = erro</span><span>pontilhado = ninguém faz</span>`
+
+// ---------- animação ----------
+document.getElementById('voltar').onclick = () => { parar(); destacar(null) }
+for (const [id, fator] of [['aproximar', 1.2], ['afastar', 1 / 1.2]]) document.getElementById(id).onclick = () => { voo = null; camera.zoom = Math.max(controls.minZoom, Math.min(controls.maxZoom, camera.zoom * fator)); camera.updateProjectionMatrix() }
+const relogio = new THREE.Clock()
+function quadro() {
+  const dt = Math.min(0.05, relogio.getDelta()), t = movimentoReduzido.matches ? 0 : relogio.elapsedTime
+  for (const tr of TRILHOS) for (const pk of tr.pacotes) {
+    pk.t = (pk.t + (movimentoReduzido.matches ? 0 : dt) / (8 + tr.ln.estacoes.length)) % 1
+    pk.p.position.copy(tr.caminho.getPointAt(pk.t))
+  }
+  for (const r of ELEVADOR) { const f = (t * 0.25 + r.userData.fase) % 1; r.position.y = 0.6 + f * (TORRE_Y - 1.4); r.material.opacity = 1 - f; r.material.transparent = true }
+  for (const o of ondas) {
+    const f = (t * 0.35 + o.userData.fase) % 1
+    o.scale.setScalar(1 + f * 2.0); o.material.opacity = 0.45 * (1 - f)
+  }
+  for (const [id, o] of Object.entries(OBJ)) {
+    if (agentePor[id].ocupado) { o.boneco.position.y = o.base + Math.abs(Math.sin(t * 6 + id.length)) * 0.05; o.anel.material.opacity = 0.5 + Math.sin(t * 3) * 0.3 }
+  }
+  if (voo) {
+    voo.t = movimentoReduzido.matches ? 1 : Math.min(1, voo.t + dt / 1.1)
+    const e = voo.t < 0.5 ? 2 * voo.t * voo.t : 1 - Math.pow(-2 * voo.t + 2, 2) / 2
+    controls.target.lerpVectors(voo.de, voo.para, e)
+    camera.zoom = voo.z0 + (voo.z1 - voo.z0) * e
+    camera.updateProjectionMatrix()
+    if (voo.t === 1) voo = null
+  }
+  controls.update()
+  document.body.classList.toggle('panorama', ativa === null && camera.zoom < zoomGeral() * 1.35)
+  composer.render()
+  rotulos.render(scene, camera)
+  requestAnimationFrame(quadro)
+}
+quadro()
+addEventListener('resize', () => {
+  const celular = innerWidth <= 760
+  if (celular !== (camera.userData.celular ?? false)) { camera.position.set(...(celular ? [58, 62, 12] : [4, 42, 46])); camera.userData.celular = celular }
+  VIEW = vv()
+  Object.assign(camera, { left: -VIEW * asp(), right: VIEW * asp(), top: VIEW, bottom: -VIEW })
+  desloca()
+  if (ativa === null) camera.zoom = zoomGeral()
+  camera.updateProjectionMatrix()
+  renderer.setSize(innerWidth, innerHeight); rotulos.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight)
+})
+// ?linha=N abre destacando um caminho; ?tour começa a apresentação
+if (q.has('linha')) destacar(Number(q.get('linha')) - 1)
+if (q.has('tour')) btTour.click()
+// dados novos: o mod regrava dados.js e versao.js a cada minuto; a página
+// recarrega quando a versão muda (e não no meio do tour nem com caminho aberto)
+let versao = null
+setInterval(() => {
+  if (q.has('fixo') || embutida) return
+  const s = document.createElement('script')
+  s.src = 'versao.js?' + Date.now()
+  s.onload = () => { if (versao === null) versao = window.__v; else if (window.__v !== versao && !tour && ativa === null) location.reload(); s.remove() }
+  s.onerror = () => s.remove()
+  document.body.appendChild(s)
+}, 30000)
+</script>
+</body>
+</html>
