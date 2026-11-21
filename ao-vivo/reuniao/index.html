@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Reunião</title>
+<!-- 06/out/2026: a reunião virou um MODO do Jarvis (../ = /ao-vivo/). Este endereço antigo ficou só como PORTA: os
+     convites já mandados (…/ao-vivo/reuniao/?entrar=<código>) continuam abrindo, agora na reunião dentro do Jarvis,
+     com o tema junto. Sem código (o Mac do anfitrião), abre o Jarvis já na reunião (?reuniao=1). -->
+<script>
+(function () {
+  var p = new URLSearchParams(location.search), q = new URLSearchParams();
+  var codigo = p.get('entrar') || '', tema = p.get('tema') || '';
+  if (/^[a-z2-9]{10}$/.test(codigo)) q.set('entrar', codigo); else q.set('reuniao', '1');
+  if (/^[a-z0-9-]{2,40}$/.test(tema)) q.set('tema', tema);
+  // os parâmetros de ensaio passam (página de teste no Mac)
+  ['mudo', 'semLogin', 'linkLocal', 'cartoes', 'gravar', 'gravarLonge', 'sala', 'semMascote', 'semVidro', 'anfitriao'].forEach(function (k) { if (p.has(k)) q.set(k, p.get(k)); });
+  location.replace('../?' + q.toString() + location.hash);
+})();
+</script>
+</head>
+<body style="background:#0b1102;color:#f1e9c4;font-family:sans-serif"><p style="padding:16px">Abrindo a reunião… <a href="../" style="color:#c4ca3c">continuar</a></p></body>
+</html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#3a0614">
+<title>Brevant ao vivo</title>
+<link rel="manifest" href="../temas/brevant/manifest.webmanifest">
+<link rel="icon" href="../temas/brevant/icone-192.png">
+<!-- Endereço limpo do tema (03/out/2026): /ao-vivo/brevant/ → a MESMA página com ?tema=brevant
+     (o motor é um só; ver docs/ao-vivo/TEMAS.md). Leva junto o resto do endereço (?demo, ?chamado…).
+     Sai do site junto com temas/brevant/ enquanto o tema não estiver em TEMAS_PUBLICOS. -->
+<script>
+  var q = location.search.replace(/^\?/, '').split('&').filter(function (p) { return p && p.indexOf('tema=') !== 0; });
+  location.replace('../?' + ['tema=brevant'].concat(q).join('&') + location.hash);
+</script>
+</head>
+<body style="background:#3a0614"></body>
+</html>
