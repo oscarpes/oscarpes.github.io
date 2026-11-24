@@ -1,0 +1,38 @@
+{
+  "_leia": "DEMONSTRAÇÃO para representantes (06/out/2026): marca Oscarpes, dados 100 % FICTÍCIOS de milho (dados-demo.json). Roteiro, cola e portão: scripts/demo-milho/ e scripts/conferir-demo-milho.ts.",
+  "nome": "Oscarpes",
+  "titulo": "Oscarpes · Demonstração",
+  "corDaBarra": "#0b1102",
+  "manifesto": "manifest.webmanifest",
+  "icone": "icone-ouro-192.png",
+  "iconeInicio": "folha.png",
+  "css": "tema.css",
+  "marca": { "imagem": "folha.png", "texto": "OSCARPES · DEMONSTRAÇÃO" },
+  "abertura": {
+    "imagem": "folha.png",
+    "titulo": "OSCARPES · DEMONSTRAÇÃO",
+    "texto": "Demonstração com dados fictícios de milho: a carteira de um representante e os resultados dos ensaios no mapa. Converse comigo como numa ligação: eu escuto, respondo em voz e abro na tela."
+  },
+  "chamada": { "extras": ["jarvis", "oscarpes"], "dizer": "Oscar" },
+  "saudacao": {
+    "ios": "Olá. Esta é a demonstração com dados fictícios de milho. Pode perguntar.",
+    "outros": "Olá. Esta é a demonstração com dados fictícios de milho. Pode perguntar; depois, é só me chamar de Oscar."
+  },
+  "falas": { "dispensa": "Tá bom. Qualquer coisa, é só me chamar." },
+  "musica": false,
+  "fundo": "raizes",
+  "particulas": { "imagem": "folha.png" },
+  "trocaDeCores": {},
+  "trocaDeTexto": [],
+  "etiquetas": "\\bOSC \\d{4}\\b",
+  "modulos": ["mapa-gd-nucleo.js", "demo-milho-falas.js", "demo-milho.js"],
+  "naoIndexar": true,
+  "pronuncia": {
+    "OSC 2815": "ó ésse cê vinte e oito quinze",
+    "OSC 2701": "ó ésse cê vinte e sete zero um",
+    "OSC 2640": "ó ésse cê vinte e seis quarenta",
+    "OSC 2990": "ó ésse cê vinte e nove noventa",
+    "OSC": "ó ésse cê",
+    "BEST": "bést"
+  }
+}

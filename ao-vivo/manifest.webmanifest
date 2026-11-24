@@ -1,0 +1,16 @@
+{
+  "name": "Oscarpes ao vivo",
+  "short_name": "Oscarpes",
+  "description": "Converse com o Oscarpes por voz: painéis, mapas e chuva na tela.",
+  "start_url": "/ao-vivo/",
+  "scope": "/ao-vivo/",
+  "display": "standalone",
+  "launch_handler": { "client_mode": ["focus-existing", "auto"] },
+  "background_color": "#0b1102",
+  "theme_color": "#0b1102",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icone-ouro-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-ouro-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

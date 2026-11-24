@@ -1,0 +1,77 @@
+{
+  "_leia": "Tema AGROESTE da tela ao vivo (08/out/2026). Guia = Template Agroeste (PowerPoint interno da Bayer, RESTRICTED): só para quem trabalha para a Agroeste (o Emiliano), NUNCA aberto: fica FORA de scripts/temas-publicos.txt e vai ao ar COM LOGIN pela lista scripts/temas-com-login.txt (João, 09/out/2026: \"pode publicar o Jarvis da Agroeste\"). O módulo acesso.js só libera o INICIAR para membro da org Agroeste (org_membros) ou super admin — o servidor confere de novo na voz. Azuis #005C9E/#0098D8/#264983, verde #96E860/#74AF27, Inter (Black nos títulos), logo empilhada branca, as ondas da logo como bolinhas (o verde vira 'ouro'), a assinatura Bayer na abertura. Ver assets/marcas/agroeste/LEIA.txt e docs/ao-vivo/TEMAS.md.",
+  "nome": "Agroeste",
+  "titulo": "Agroeste ao vivo",
+  "corDaBarra": "#152c52",
+  "manifesto": "manifest.webmanifest",
+  "icone": "icone-192.png",
+  "iconeInicio": null,
+  "css": "tema.css",
+  "fonteGoogle": "Inter:wght@400;500;600;700;800;900",
+  "marca": {
+    "imagem": "logo-branco.png",
+    "texto": "AO VIVO"
+  },
+  "abertura": {
+    "imagem": "logo-branco.png",
+    "titulo": "SE É MILHO, É BAYER. SE É BAYER, É BOM.",
+    "texto": "Sou o assistente Agroeste. Converse comigo como numa ligação: eu escuto enquanto esta tela estiver aberta, respondo em voz e abro na tela o que você pedir."
+  },
+  "chamada": {
+    "extras": [
+      "agroeste",
+      "agro oeste",
+      "agroest",
+      "agro este"
+    ],
+    "dizer": "Agroeste"
+  },
+  "saudacao": {
+    "ios": "Olá, eu sou o assistente Agroeste. Pode perguntar.",
+    "outros": "Olá, eu sou o assistente Agroeste. Pode perguntar; depois, é só me chamar de Agroeste."
+  },
+  "musica": false,
+  "fundo": "nenhum",
+  "particulas": {
+    "imagem": "simbolo.png",
+    "acento": "#74AF27",
+    "ouroAleatorio": 0,
+    "espera": "#E6EEF6",
+    "ouvindo": "#FFFFFF",
+    "falando": "#DDF7CB",
+    "ouro": "#96E860",
+    "halo": "#0098D8",
+    "anel": "#96E860",
+    "nucleo": [
+      1,
+      1,
+      1
+    ]
+  },
+  "trocaDeCores": {
+    "#0b1102": "#11264a",
+    "#141d05": "#152c52",
+    "#060901": "#0a1a33",
+    "#0e1503": "#13284d",
+    "#182206": "#1a3563",
+    "#1b2704": "#1d3b6d",
+    "#26350a": "#264983",
+    "#c4ca3c": "#e6eef6",
+    "#d6dc6e": "#ffffff",
+    "#d8dc6a": "#96e860",
+    "#a2a72a": "#0098d8",
+    "#7d8420": "#a9c3de",
+    "#f9a322": "#96e860",
+    "#f9b84a": "#009ddc",
+    "#f1e9c4": "#f2f8ff",
+    "#b3a97a": "#c3d6ea",
+    "#e1d49b": "#d9e6f3",
+    "#7d4c01": "#005c9e"
+  },
+  "trocaDeTexto": [],
+  "naoIndexar": true,
+  "login": true,
+  "modulos": [
+    "acesso.js"
+  ]
+}

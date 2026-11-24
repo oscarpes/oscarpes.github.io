@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1102">
+<title>Oscarpes · Demonstração</title>
+<link rel="manifest" href="../temas/demo-milho/manifest.webmanifest">
+<link rel="icon" href="../temas/demo-milho/icone-ouro-192.png">
+<!-- Endereço limpo do tema (03/out/2026): /ao-vivo/demo-milho/ → a MESMA página com ?tema=demo-milho
+     (o motor é um só; ver docs/ao-vivo/TEMAS.md). Leva junto o resto do endereço (?demo, ?chamado…).
+     Sai do site junto com temas/demo-milho/ enquanto o tema não estiver em TEMAS_PUBLICOS. -->
+<script>
+  var q = location.search.replace(/^\?/, '').split('&').filter(function (p) { return p && p.indexOf('tema=') !== 0; });
+  location.replace('../?' + ['tema=demo-milho'].concat(q).join('&') + location.hash);
+</script>
+</head>
+<body style="background:#0b1102"></body>
+</html>
